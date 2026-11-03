@@ -9,12 +9,18 @@ Each scene is read in one take for natural intonation; caption + "beat" timings 
 the pauses between lines (located with each line also read separately). If a pause can't be
 found, that scene falls back to stitching the separately read lines (--stitched forces it).
 Also generates the sound effects and ambient music bed into public/ if missing.
+
+A line can also be a short piece of music instead of speech, so the video plays what the
+narration talks about: {"text": "♪ caption", "notes": "Bb4:1 F5:3 r:1/2 Bb3+D4+F4:2",
+"bpm": 100, "instrument": "brass"}. See synth_notes() for the notation.
 """
 
 import argparse
 import hashlib
 import json
 import math
+import re
+from fractions import Fraction
 import sys
 import urllib.request
 import wave
@@ -254,6 +260,134 @@ def ensure_sound_design() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Music lines: a short melody or chord progression synthesized in place of speech.
+# ---------------------------------------------------------------------------
+
+MUSIC_GAP = 0.45  # seconds of silence around a music line, so it doesn't run into speech
+MUSIC_PEAK = 0.55  # quieter peak than speech (0.89): sustained tones sound louder
+INSTRUMENTS = ("piano", "brass", "strings", "pure")
+_NOTE = re.compile(r"^([A-Ga-g])([#b]?)(-?\d)$")
+_STEP = {"c": 0, "d": 2, "e": 4, "f": 5, "g": 7, "a": 9, "b": 11}
+
+
+def is_music(line) -> bool:
+    return isinstance(line, dict) and "notes" in line
+
+
+def midi_of(name: str) -> int:
+    """Scientific pitch name → MIDI number: C4 (middle C) = 60, A4 = 69, Bb3 = 58, F#5 = 78."""
+    m = _NOTE.match(name.strip())
+    if not m:
+        raise ValueError(f"bad note name {name!r}: use a letter, optional # or b, and an octave, e.g. Bb4")
+    letter, acc, octave = m.groups()
+    return 12 * (int(octave) + 1) + _STEP[letter.lower()] + {"#": 1, "b": -1, "": 0}[acc]
+
+
+def parse_notes(spec: str) -> list[tuple[float, list[int]]]:
+    """'Bb4:1 F5:3 r:1/2 Bb3+D4+F4:2' → [(beats, [midi, …]), …]; an empty list is a rest.
+    Each token is PITCH:BEATS (beats may be a fraction like 1/3 or 0.5; default 1),
+    chords join pitches with +, and r is a rest."""
+    events = []
+    for tok in spec.split():
+        pitch, _, beats = tok.partition(":")
+        dur = float(Fraction(beats)) if beats else 1.0
+        if dur <= 0:
+            raise ValueError(f"bad duration in {tok!r}")
+        events.append((dur, [] if pitch.lower() == "r" else [midi_of(p) for p in pitch.split("+")]))
+    if not events:
+        raise ValueError("empty notes")
+    return events
+
+
+def music_duration(line) -> float:
+    bpm = float(line.get("bpm", 100))
+    return sum(b for b, _ in parse_notes(line["notes"])) * 60 / bpm + 0.35  # + release tail
+
+
+def _tone(freq: float, dur: float, instrument: str, sr: int) -> np.ndarray:
+    """One note of `dur` seconds plus a short release, by additive synthesis."""
+    rel = 0.35 if instrument == "piano" else 0.2
+    n = int((dur + rel) * sr)
+    t = np.arange(n) / sr
+    vib = 1.0
+    if instrument in ("strings", "brass"):
+        depth = 0.004 if instrument == "strings" else 0.0025
+        vib = 1 + depth * np.sin(2 * np.pi * 5.5 * t) * np.clip((t - 0.25) / 0.3, 0, 1)
+    phase = 2 * np.pi * np.cumsum(freq * vib) / sr
+    if instrument == "pure":
+        wave = np.sin(phase)
+        env = np.minimum(1, t / 0.01)
+    elif instrument == "piano":
+        wave = sum(np.sin(k * phase) * np.exp(-t * (1.2 + 0.7 * k)) / k**1.3 for k in range(1, 9))
+        env = np.minimum(1, t / 0.004)
+    elif instrument == "brass":
+        bright = np.clip(t / 0.08, 0, 1)  # high partials bloom in, like a horn's attack
+        wave = sum(np.sin(k * phase) / k * (bright if k > 3 else 1) for k in range(1, 13) if k * freq < 9000)
+        env = np.minimum(1, t / 0.035)
+    else:  # strings: two slightly detuned sawtooth-ish voices
+        phase2 = phase * 1.003
+        wave = sum((np.sin(k * phase) + np.sin(k * phase2)) / (2 * k) for k in range(1, 11) if k * freq < 9000)
+        env = np.minimum(1, t / 0.12)
+    release = np.where(t < dur, 1, np.clip((dur + rel - t) / rel, 0, 1))
+    return wave * env * release
+
+
+def synth_notes(line, sr: int) -> tuple[np.ndarray, list[dict]]:
+    """Render a music line. Returns the samples and the notes as [{"t", "d", "midi"}]
+    (seconds from the line start), which the video uses to light up notes as they sound."""
+    bpm = float(line.get("bpm", 100))
+    instrument = line.get("instrument", "piano")
+    if instrument not in INSTRUMENTS:
+        raise ValueError(f"unknown instrument {instrument!r}: one of {', '.join(INSTRUMENTS)}")
+    events = parse_notes(line["notes"])
+    beat = 60 / bpm
+    total = music_duration(line)
+    out = np.zeros(int(total * sr) + sr)
+    notes, cursor = [], 0.0
+    for beats, pitches in events:
+        dur = beats * beat
+        if pitches:
+            notes.append({"t": round(cursor, 3), "d": round(dur, 3), "midi": pitches})
+            for m in pitches:
+                tone = _tone(440 * 2 ** ((m - 69) / 12), dur, instrument, sr) / max(1, len(pitches)) ** 0.5
+                s0 = int(cursor * sr)
+                out[s0 : s0 + len(tone)] += tone[: len(out) - s0]
+        cursor += dur
+    out = out[: int(total * sr)]
+    out = np.convolve(out, np.ones(3) / 3, "same")  # take the edge off the highest partials
+    return out / (np.abs(out).max() or 1) * MUSIC_PEAK, notes
+
+
+def speak_run(kokoro, says: list[str], voice: str, speed: float, lang: str, stitched: bool):
+    """Voice consecutive spoken lines. Returns (audio or None, sample rate, [(start, end)], mode)."""
+    sr, chunks, spans, cursor = 24000, [], [], 0.0
+    for i, say in enumerate(says):
+        if kokoro is None:
+            size = len(say.split()) / WORDS_PER_SEC if spaced(voice) else len(say.replace(" ", "")) / CHARS_PER_SEC
+            dur = max(1.2, size)
+        else:
+            samples, sr = kokoro.create(say, voice=voice, speed=speed, lang=lang)
+            samples = trim(np.asarray(samples, dtype=np.float32), sr)
+            dur = len(samples) / sr
+            chunks.append(samples)
+            if i < len(says) - 1:
+                chunks.append(np.zeros(int(GAP * sr), dtype=np.float32))
+        spans.append((cursor, cursor + dur))
+        cursor += dur + (GAP if i < len(says) - 1 else 0)
+    if kokoro is None:
+        return None, sr, spans, "estimate"
+    audio, mode = np.concatenate(chunks), "stitched"
+    if not stitched and len(says) > 1:
+        # Read the run in one take for natural intonation; keep per-line timings by
+        # finding the pauses between lines.
+        take, sr = kokoro.create(" ".join(says), voice=voice, speed=speed, lang=lang)
+        take = trim(np.asarray(take, dtype=np.float32), sr)
+        found = align_one_take(take, sr, [b - a for a, b in spans])
+        if found is not None:
+            audio, mode, spans = take, "one take", found
+    return audio / (np.abs(audio).max() or 1) * 0.89, sr, spans, mode
+
+# ---------------------------------------------------------------------------
 
 
 def main() -> None:
@@ -277,7 +411,7 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
 
     digest = hashlib.sha256(
-        json.dumps([meta["scenes"], voice, lang, speed, args.estimate, args.stitched, "one-take-v1"], sort_keys=True).encode()
+        json.dumps([meta["scenes"], voice, lang, speed, args.estimate, args.stitched, "one-take-v1", "music-v1"], sort_keys=True).encode()
     ).hexdigest()
     stamp = out / ".hash"
     if not args.force and stamp.exists() and stamp.read_text() == digest and (out / "timings.json").exists():
@@ -301,45 +435,49 @@ def main() -> None:
 
     scenes = []
     for scene in meta["scenes"]:
-        lines = []
-        cursor = 0.0
-        chunks = []
-        sr = 24000
-        says = [line_text(line)[1] for line in scene["lines"]]
-        for i, line in enumerate(scene["lines"]):
-            text, say = line_text(line)
-            if kokoro is None:
-                size = len(say.split()) / WORDS_PER_SEC if spaced(voice) else len(say.replace(" ", "")) / CHARS_PER_SEC
-                dur = max(1.2, size)
+        # Consecutive spoken lines are voiced together; each music line is synthesized on its own.
+        groups: list[list] = []
+        for line in scene["lines"]:
+            if is_music(line) or not groups or is_music(groups[-1][0]):
+                groups.append([line])
             else:
-                samples, sr = kokoro.create(say, voice=voice, speed=speed, lang=lang)
-                samples = trim(np.asarray(samples, dtype=np.float32), sr)
-                dur = len(samples) / sr
-                chunks.append(samples)
-                if i < len(scene["lines"]) - 1:
-                    chunks.append(np.zeros(int(GAP * sr), dtype=np.float32))
-            lines.append({"text": text, "start": round(cursor, 3), "end": round(cursor + dur, 3)})
-            cursor += dur + (GAP if i < len(scene["lines"]) - 1 else 0)
-        audio = np.concatenate(chunks) if chunks else None
-        mode = "estimate" if kokoro is None else "stitched"
-        if kokoro is not None and not args.stitched and len(says) > 1:
-            # Read the whole scene in one take for natural intonation; keep per-line
-            # timings by finding the pauses between lines.
-            take, sr = kokoro.create(" ".join(says), voice=voice, speed=speed, lang=lang)
-            take = trim(np.asarray(take, dtype=np.float32), sr)
-            spans = align_one_take(take, sr, [l["end"] - l["start"] for l in lines])
-            if spans is not None:
-                audio, mode = take, "one take"
-                lines = [{"text": l["text"], "start": round(a, 3), "end": round(b, 3)} for l, (a, b) in zip(lines, spans)]
-                cursor = len(take) / sr
+                groups[-1].append(line)
+        sr = 24000
+        lines, parts, modes, cursor = [], [], [], 0.0
+        for gi, group in enumerate(groups):
+            music = is_music(group[0])
+            if gi > 0:
+                gap = MUSIC_GAP if music or is_music(groups[gi - 1][0]) else GAP
+                parts.append(np.zeros(int(gap * sr), dtype=np.float32))
+                cursor += gap
+            if music:
+                line = group[0]
+                if kokoro is None:
+                    dur, notes = music_duration(line), synth_notes(line, 8000)[1]
+                else:
+                    audio, notes = synth_notes(line, sr)
+                    parts.append(audio.astype(np.float32))
+                    dur = len(audio) / sr
+                lines.append({"text": line["text"], "start": round(cursor, 3), "end": round(cursor + dur, 3), "music": True, "notes": notes})
+                modes.append("music")
+                cursor += dur
+                continue
+            texts = [line_text(l)[0] for l in group]
+            audio, sr, spans, mode = speak_run(kokoro, [line_text(l)[1] for l in group], voice, speed, lang, args.stitched)
+            if audio is not None:
+                parts.append(audio.astype(np.float32))
+                dur = len(audio) / sr
+            else:
+                dur = spans[-1][1]
+            lines += [{"text": t, "start": round(cursor + a, 3), "end": round(cursor + b, 3)} for t, (a, b) in zip(texts, spans)]
+            modes.append(mode)
+            cursor += dur
         file = None
-        if audio is not None:
-            peak = np.abs(audio).max() or 1
-            audio = audio / peak * 0.89
-            write_wav(out / f"{scene['id']}.wav", audio, sr)
+        if kokoro is not None and parts:
+            write_wav(out / f"{scene['id']}.wav", np.concatenate(parts), sr)
             file = f"audio/L{n:04d}/{scene['id']}.wav"
         scenes.append({"id": scene["id"], "file": file, "duration": round(cursor, 3), "lines": lines})
-        print(f"  {scene['id']:<20} {cursor:5.1f}s  ({mode})", flush=True)
+        print(f"  {scene['id']:<20} {cursor:5.1f}s  ({' + '.join(dict.fromkeys(modes))})", flush=True)
 
     timings = {
         "lesson": n,

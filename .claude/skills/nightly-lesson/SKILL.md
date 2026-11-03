@@ -110,6 +110,17 @@ Shape (see `reference/lesson.json`):
 - Use `say` when TTS would mispronounce something: acronyms ("D N A",
   "U N E S C O"), symbols, numbers with units ("ten to the power of twelve"), code identifiers.
   Write numbers out in `say` when in doubt.
+- **Play what you talk about.** When the lesson is about something you can hear (a melody, an
+  interval, a chord, a rhythm, a musical theme), the viewer must *hear* it, not just be told
+  about it. A line can be music instead of speech, synthesized in place by `tts.py`:
+  `{"text": "♪ The opening leap: B♭ up to F", "notes": "Bb3:2/3 F4:2 r:1/2", "bpm": 104, "instrument": "brass"}`.
+  `notes` is space-separated `PITCH:BEATS` (scientific pitch, C4 = middle C, `#`/`b`
+  accidentals; beats like `1`, `0.5`, `1/3`, default 1), chords join pitches with `+`
+  (`Bb3+D4+F4:2`), `r` is a rest. `instrument`: `piano` (default), `brass`, `strings` or `pure`
+  (a plain sine, best for comparing intervals). `text` is the caption shown while it plays.
+  Set it up in speech ("Listen to the jump."), play it, then comment on it; play it again
+  after the explanation when hearing it twice helps. Keep excerpts of real works short
+  (a few bars of the theme being analysed), and get the pitches and rhythm right.
 
 ### Explainer-style writing
 
@@ -173,6 +184,10 @@ One component per scene id, keys exactly matching `lesson.json`. Rules of thumb:
   anything the kit lacks. If a helper is broadly reusable, add it to the kit (with a short doc
   comment) instead, without changing existing component behaviour.
 - Sound: `<Sfx at name="pop|whoosh|ding|click|swell">` on big reveals only (≈ 1–3 per scene).
+- Music lines: show the notes while they sound. `<PianoRoll line={i} />` draws line `i`'s notes
+  as bars that light up as they play; or build your own (a staff, a keyboard, an interval
+  ladder) from `useNotes(i)` (each note's `at`, `frames`, `midi`) and `noteName(midi)`. The
+  ambient pad goes quiet by itself during music lines. Avoid `Sfx` over them.
 - Deterministic randomness only: `random('seed')`, never `Math.random()`.
 
 ## 4. Quiz: `lessons/NNNN-<slug>/quiz.json`

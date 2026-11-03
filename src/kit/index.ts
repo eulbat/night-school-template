@@ -10,6 +10,7 @@ export * from './characters';
 export * from './icons';
 export * from './data';
 export * from './text';
+export * from './music';
 export { Backdrop, Ground } from './backdrop';
 
 export { useCurrentFrame, interpolate, spring, random, Easing, AbsoluteFill, Sequence } from 'remotion';

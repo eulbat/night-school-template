@@ -22,7 +22,12 @@ export type SceneInfo = {
   beatEnds: number[];
   /** Scene length in frames. */
   duration: number;
+  /** For each line, the notes it plays (music lines only; empty for speech), in scene frames. */
+  notes?: NoteEvent[][];
 };
+
+/** One note or chord of a music line: starts at frame `at`, lasts `frames`, MIDI pitches (60 = middle C). */
+export type NoteEvent = { at: number; frames: number; midi: number[] };
 
 export const SceneContext = createContext<SceneInfo>({ beats: [0], beatEnds: [60], duration: 150 });
 
