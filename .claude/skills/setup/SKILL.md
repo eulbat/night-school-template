@@ -23,8 +23,7 @@ gh auth status
   open the new folder in Claude Code and run `/setup` again. If `gh` can't see the template,
   they need read access from its owner.
 - `gh` not signed in: have them run `gh auth login` first.
-- **Already set up** (`template.json` → `synced` isn't null, or `"source": true`, the
-  template's own source repo): this is a change, not a first setup. Ask what they want to change (themes, rhythm, profile, voices), do only the matching
+- **Already set up** (`template.json` → `synced` isn't null): this is a change, not a first setup. Ask what they want to change (themes, rhythm, profile, voices), do only the matching
   steps below (2 for the curriculum, 7 for the rhythm), never step 3, and finish with step 8.
 
 ## 1. Interview

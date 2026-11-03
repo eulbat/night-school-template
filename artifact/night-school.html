@@ -755,7 +755,7 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
       $('qtext').textContent = 'Writing a fresh question on this concept…';
       try {
         const out = await state.sample.json(
-          `Rewrite this quiz question so it tests the SAME concept and can be graded with the SAME rubric, but is phrased differently or applied to a new, concrete situation, so it can't be answered by recalling the original wording. Keep the difficulty (the learner: ${learner()}). Write it in ${languageName()}. Reply with only JSON: {"question": "..."}\n\nOriginal question: ${it.q.question}\nRubric: ${it.q.rubric.join(' | ')}`,
+          `Rewrite this quiz question so it tests the SAME concept and can be graded with the SAME rubric, but is phrased differently or applied to a new, concrete situation, so it can't be answered by recalling the original wording. It must stand on its own: the learner saw this lesson weeks ago, so state every number, setup or example it relies on, and never refer to "the video", "the lesson", "same ..." or another question. Keep the difficulty (the learner: ${learner()}). Write it in ${languageName()}. Reply with only JSON: {"question": "..."}\n\nOriginal question: ${it.q.question}\nRubric: ${it.q.rubric.join(' | ')}\nWhat the lesson said: ${(it.q.evidence || []).join(' | ')}`,
           { modelTier: 'quick', cache: false });
         if (out && typeof out.question === 'string') it.q.question = out.question;
       } catch (e) { /* fall back to the original wording */ }

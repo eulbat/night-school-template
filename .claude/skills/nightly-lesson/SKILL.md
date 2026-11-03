@@ -217,6 +217,13 @@ One component per scene id, keys exactly matching `lesson.json`. Rules of thumb:
 - The `evidence` quotes only prove the *concept* was taught. The question itself should test
   the concept, not the wording: rephrase it, apply it to a new situation, ask for a prediction
   or a trade-off. Never ask the learner to repeat what the narration said.
+- **Every question stands on its own.** Each one comes back weeks later as a spaced-repetition
+  review, mixed with other lessons, when the learner no longer has the video in mind. State
+  every number, setup or example the question relies on ("a photo app gets a million 2 MB
+  photos a day and keeps three copies"), never "same app", "the lesson's model",
+  "experiment B", "as in the video" or a reference to another question. Name it in a few
+  words rather than by the lesson's label. Same for options and hints (hints may still point to
+  a scene or the deep dive). `npm run check` rejects the obvious cases.
 - **One unambiguous ask per question.** Vague verbs like "gets its behaviour" or "works"
   invite several fair readings: name exactly what you want ("where do the values come
   from?", "what happens to w?"). Re-read each question as the learner would and make sure only

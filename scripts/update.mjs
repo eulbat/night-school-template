@@ -23,10 +23,6 @@ if (repoSlug() === tpl.repo) {
   console.log(`This is the template itself (${tpl.repo}): nothing to update from.`);
   process.exit(0);
 }
-if (tpl.source) {
-  console.log(`This is the template's source repo: engine changes go out with /publish-template, not in.`);
-  process.exit(0);
-}
 
 // `repo` is a GitHub owner/name, or any git URL or path.
 const urls = /^[\w.-]+\/[\w.-]+$/.test(tpl.repo) ? [`https://github.com/${tpl.repo}.git`, `git@github.com:${tpl.repo}.git`] : [tpl.repo];

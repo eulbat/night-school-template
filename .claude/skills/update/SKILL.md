@@ -9,8 +9,8 @@ The template's engine paths (listed in `template.json` → `engine`) get the ups
 since the last sync, applied as a 3-way patch. The curriculum, lessons, progress, README and
 artifact URL are never touched.
 
-1. `node scripts/update.mjs status`. "This is the template itself", "the template's source
-   repo" (use `/publish-template` there) or "Up to date": say so and stop. Exit code 2: they
+1. `node scripts/update.mjs status`. "This is the template itself" or "Up to date": say so
+   and stop. Exit code 2: they
    need read access to the template repo (`gh auth setup-git`, or ask its owner).
 2. Summarize the upstream commits in plain words (what they'll notice: new kit components, page
    changes, better quizzes…) and ask for a go-ahead.

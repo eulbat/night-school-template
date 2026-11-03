@@ -92,8 +92,9 @@ dive?"). Skipping it records nothing.
 After the lesson's questions, `list` `data/users/me/progress/reviews` and take up to 3 items
 whose `due` ≤ today (lowest box first). For each due item
 (skip concepts from today's lesson), read that lesson's `quiz.json` and ask a **fresh** question
-on the same concept: rephrased or applied to a new situation, not the original wording. Same
-golden rules, record the result the same way. Since it's unrelated to today's topic, open each
+on the same concept: rephrased or applied to a new situation, not the original wording. The
+learner saw that lesson weeks ago, so the question must stand on its own: state every number,
+setup or example it needs, never "same app as before" or "in the video". Same golden rules, record the result the same way. Since it's unrelated to today's topic, open each
 review question with a short topic label: `Review · <track> · Lesson N: <title>`.
 
 ## Wrap up

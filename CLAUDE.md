@@ -11,8 +11,8 @@ CI renders it into a narrated video, and in the morning the learner watches it a
   `/today`, `/quiz [n|topic]`, `/lessons [query]`.
 - **Setting up or changing it:** `/setup` (a new learner's copy of the template, or new themes
   and rhythm), `/update` (pull engine improvements from the template repo in `template.json`).
-  In the template's source repo (`"source": true`), `/publish-template` pushes the engine out
-  to the public template instead.
+  Engine changes meant for everyone are made in the template repo itself, then pulled here with
+  `/update`; an engine edit made only here stays local (`/update` keeps it).
 - The learner is described in `curriculum/curriculum.json` (`learner`): pitch everything to
   them. Intuition first, then real depth. Talk to them in its `language`, unless they write
   in another one.

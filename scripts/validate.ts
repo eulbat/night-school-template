@@ -133,6 +133,12 @@ for (const d of dirs) {
         if (!Array.isArray(q.rubric) || q.rubric.length < 1) err(`quiz q${i + 1} needs a rubric`);
       }
       if (!q.scene || !ids.has(q.scene)) err(`quiz q${i + 1} must reference a scene id ("scene") to rewatch`);
+      // Questions come back weeks later as reviews, so they can't lean on the video's setup.
+      const leans = /\b(the|this|that) (video|lesson)\b|\bexperiment [A-Z]\b|\b(previous|last|earlier) question\b/i;
+      for (const t of [q.question, ...(q.options ?? []).flatMap((o: any) => [o.text, o.why])]) {
+        const m = typeof t === 'string' && (t.match(leans) || (t === q.question && t.match(/^same\b/i)));
+        if (m) err(`quiz q${i + 1}: "${m[0]}" leans on the lesson; questions come back as standalone reviews, so restate the setup`);
+      }
       // Every question must be grounded in what the lesson actually says: `evidence` quotes
       // the narration (or, for bonus questions, the deep dive) verbatim.
       if (!Array.isArray(q.evidence) || q.evidence.length < 1) err(`quiz q${i + 1} needs "evidence": verbatim quotes from the narration (or notes for the bonus question)`);
