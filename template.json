@@ -1,0 +1,24 @@
+{
+  "repo": "eulbat/night-school-template",
+  "branch": "main",
+  "synced": null,
+  "engine": [
+    ".claude/settings.json",
+    ".claude/skills",
+    ".github/workflows",
+    ".gitignore",
+    "CLAUDE.md",
+    "artifact/capabilities.json",
+    "artifact/night-school.html",
+    "package-lock.json",
+    "package.json",
+    "reference",
+    "remotion.config.ts",
+    "scripts",
+    "src/Lesson.tsx",
+    "src/Root.tsx",
+    "src/index.ts",
+    "src/kit",
+    "tsconfig.json"
+  ]
+}

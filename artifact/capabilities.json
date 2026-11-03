@@ -1,0 +1,1 @@
+{"assets":{},"db":{"rules":[{"path":"","read":"view","write":"admin"},{"path":"data/users/{self}","write":"interact"}]},"sample":{},"user":{}}

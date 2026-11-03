@@ -1,0 +1,1337 @@
+<title>Night School</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=JetBrains+Mono:wght@500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+/* Layout: a night-sky "classroom" — lesson stage (video, chapters, deep dive) beside a sticky tutor rail; library and progress below. Dark-first, mirrored light. */
+:root {
+  color-scheme: dark;
+  --bg: #0b1030;
+  --surface: #141a44;
+  --surface-2: #1c2358;
+  --line: #2b3373;
+  --fg: #eef0fb;
+  --muted: #9ba4d8;
+  --accent: #ffd23f;
+  --accent-ink: #1d1600;
+  --accent-text: #ffd23f;
+  /* track colours: a track picks one with "color" in curriculum.json */
+  --c-purple: #a98bff; --c-orange: #ff9d5c; --c-blue: #5cb8ff; --c-teal: #3fd6c6;
+  --c-pink: #ff8fb1; --c-green: #8fe36a; --c-yellow: #ffd86b; --c-red: #ff8a8a;
+  --good: #7ed957;
+  --warn: #ffb547;
+  --bad: #ff7a7a;
+  --shadow: 0 18px 40px rgba(3, 6, 25, .45);
+  --display: "Nunito", ui-rounded, "SF Pro Rounded", system-ui, sans-serif;
+  --read: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r: 18px;
+  --hl-kw: #c3a6ff; --hl-str: #9be27a; --hl-num: #ffb27a; --hl-fn: #7cc4ff; --hl-type: #5fe0d2;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f1f2fa; --surface: #ffffff; --surface-2: #e9ebf8; --line: #d6daf0;
+    --fg: #151938; --muted: #565d8c; --accent: #ffcd2b; --accent-ink: #1d1600; --accent-text: #8a6200;
+    --c-purple: #6b45e0; --c-orange: #c95a12; --c-blue: #1f73c7; --c-teal: #0d8f83;
+    --c-pink: #c2306a; --c-green: #2f7d12; --c-yellow: #8a6200; --c-red: #c42f2f;
+    --good: #2f8a12; --warn: #a86600; --bad: #c42f2f; --shadow: 0 14px 34px rgba(30, 36, 90, .12);
+    --hl-kw: #7a3fd9; --hl-str: #2c7a14; --hl-num: #b0520c; --hl-fn: #1d64b0; --hl-type: #0b7d72;
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f1f2fa; --surface: #ffffff; --surface-2: #e9ebf8; --line: #d6daf0;
+  --fg: #151938; --muted: #565d8c; --accent: #ffcd2b; --accent-ink: #1d1600; --accent-text: #8a6200;
+  --c-purple: #6b45e0; --c-orange: #c95a12; --c-blue: #1f73c7; --c-teal: #0d8f83;
+    --c-pink: #c2306a; --c-green: #2f7d12; --c-yellow: #8a6200; --c-red: #c42f2f;
+  --good: #2f8a12; --warn: #a86600; --bad: #c42f2f; --shadow: 0 14px 34px rgba(30, 36, 90, .12);
+    --hl-kw: #7a3fd9; --hl-str: #2c7a14; --hl-num: #b0520c; --hl-fn: #1d64b0; --hl-type: #0b7d72;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--display); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1320px; margin: 0 auto; padding-inline: clamp(16px, 3vw, 32px); padding-block: 0 64px; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+
+/* top bar */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 20px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 12px; font-weight: 900; font-size: 22px; letter-spacing: -.3px; }
+.moon { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); box-shadow: inset -9px -5px 0 rgba(0,0,0,.18), 0 0 22px color-mix(in srgb, var(--accent) 45%, transparent); position: relative; }
+.moon::after { content: ""; position: absolute; width: 4px; height: 12px; background: var(--accent); border-radius: 4px; left: 17px; top: -10px; transform: rotate(25deg); }
+.stats { display: flex; gap: 8px; flex-wrap: wrap; }
+.stat { display: inline-flex; align-items: baseline; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-weight: 800; font-size: 14px; color: var(--muted); }
+.stat b { color: var(--fg); font-family: var(--mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+
+/* main grid */
+.grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 420px); gap: 28px; align-items: start; }
+@media (max-width: 980px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+
+.chip { display: inline-flex; align-items: center; gap: 8px; font-weight: 900; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--tc, var(--muted)); }
+.chip::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--tc, var(--muted)); }
+
+.head { display: grid; gap: 8px; margin-bottom: 18px; }
+.head .meta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; color: var(--muted); font-weight: 700; font-size: 14px; }
+.head h1 { font-size: clamp(30px, 4.2vw, 50px); font-weight: 900; line-height: 1.04; letter-spacing: -1px; }
+.head .sub { color: var(--muted); font-size: 19px; font-weight: 700; }
+.time { display: flex; gap: 8px; flex-wrap: wrap; font-size: 13px; font-weight: 800; color: var(--muted); }
+.time span { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+.time span b { color: var(--fg); font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.time span.opt { border-style: dashed; }
+.dd-note { font-family: var(--display); font-size: 14px; font-weight: 700; color: var(--muted); background: var(--surface-2); border-radius: 12px; padding: 10px 14px; margin: 0 0 8px; }
+
+.player { position: relative; width: 100%; max-width: 100%; aspect-ratio: 16 / 9; border-radius: var(--r); overflow: hidden; background: #070a22; box-shadow: var(--shadow); }
+.player video { width: 100%; height: 100%; display: block; background: #070a22; }
+.pending { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 8px; padding: 24px; color: #c9cff5; }
+.pending strong { font-size: 22px; font-weight: 900; color: #fff; }
+
+.chapters { display: flex; gap: 8px; overflow-x: auto; padding-block: 14px 4px; scrollbar-width: thin; }
+.chapters button { flex: none; display: inline-flex; gap: 8px; align-items: baseline; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 8px 12px; font-weight: 800; font-size: 14px; }
+.chapters button span { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chapters button[aria-current="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+
+.objectives { margin-top: 18px; display: grid; gap: 6px; padding: 16px 20px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.objectives h3 { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 900; }
+.objectives ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-weight: 700; }
+
+/* reading tabs */
+.tabs { display: flex; gap: 6px; margin-top: 28px; border-bottom: 1px solid var(--line); }
+.tabs button { background: none; border: 0; padding: 10px 14px; font-weight: 900; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.prose { font-family: var(--read); font-size: 18px; line-height: 1.65; max-width: 70ch; padding-top: 18px; }
+.prose h1 { display: none; }
+.prose h2 { font-family: var(--display); font-weight: 900; font-size: 26px; margin: 34px 0 10px; letter-spacing: -.3px; }
+.prose h3 { font-family: var(--display); font-weight: 800; font-size: 20px; margin: 26px 0 8px; }
+.prose hr { border: 0; border-top: 1px dashed var(--line); margin: 36px 0 8px; }
+.prose blockquote { margin: 0 0 18px; padding: 10px 16px; border-radius: 12px; background: var(--surface-2); font-family: var(--display); font-size: 15px; font-weight: 700; color: var(--muted); }
+.prose code { font-family: var(--mono); font-size: .82em; background: var(--surface-2); padding: 2px 6px; border-radius: 6px; }
+.prose pre { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.prose pre code { background: none; padding: 0; font-size: 14px; line-height: 1.55; }
+/* syntax colours (highlight.js classes), from the page palette so both themes work */
+.hljs-keyword, .hljs-built_in.hljs-keyword, .hljs-literal, .hljs-meta .hljs-keyword { color: var(--hl-kw); }
+.hljs-string, .hljs-regexp, .hljs-template-string, .hljs-char { color: var(--hl-str); }
+.hljs-number, .hljs-symbol { color: var(--hl-num); }
+.hljs-comment, .hljs-quote { color: var(--muted); font-style: italic; }
+.hljs-title, .hljs-title.function_, .hljs-function .hljs-title, .hljs-section { color: var(--hl-fn); }
+.hljs-built_in, .hljs-type, .hljs-title.class_, .hljs-meta, .hljs-attr, .hljs-attribute, .hljs-property { color: var(--hl-type); }
+.hljs-params, .hljs-variable, .hljs-subst { color: var(--fg); }
+.prose table { border-collapse: collapse; font-family: var(--display); font-size: 15px; display: block; overflow-x: auto; max-width: 100%; }
+.prose th, .prose td { border-bottom: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+.prose th { font-weight: 900; color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .05em; }
+.prose a { color: var(--accent-text); }
+.transcript p { margin: 0 0 14px; }
+.transcript button { background: none; border: 0; padding: 0; font-family: var(--mono); font-size: 13px; color: var(--accent-text); margin-right: 8px; }
+
+/* tutor rail */
+.tutor { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); background: var(--surface); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); display: flex; flex-direction: column; max-height: calc(100vh - 32px); min-height: 420px; }
+@media (max-width: 980px) { .tutor { position: static; max-height: none; } }
+.tutor header { padding: 18px 20px 12px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+.tutor .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.tutor h2 { font-size: 20px; font-weight: 900; }
+.dots { display: flex; gap: 6px; }
+.dot { width: 26px; height: 8px; border-radius: 4px; background: var(--surface-2); border: 0; padding: 0; }
+.dot.cur { background: var(--accent); }
+.dot.solid { background: var(--good); } .dot.hinted { background: var(--warn); } .dot.missed { background: var(--bad); }
+.qcard { display: grid; gap: 6px; }
+.qtag { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.qtext { font-weight: 800; font-size: 17px; line-height: 1.4; }
+.thread { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 14px 20px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; min-height: 120px; }
+.msg { min-width: 0; max-width: 92%; padding: 10px 14px; border-radius: 16px; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+.msg p { margin: 0 0 6px; } .msg p:last-child { margin: 0; }
+.msg code { font-family: var(--mono); font-size: .85em; }
+.msg.tutor-msg { background: var(--surface-2); border-bottom-left-radius: 4px; }
+.msg.me { background: color-mix(in srgb, var(--accent) 20%, var(--surface)); justify-self: end; border-bottom-right-radius: 4px; white-space: pre-wrap; }
+.msg.hint { background: transparent; border: 1px dashed var(--warn); color: var(--fg); }
+.msg.hint::before { content: "Hint · "; font-weight: 900; color: var(--warn); }
+.msg.sys { background: transparent; color: var(--muted); font-size: 14px; padding: 0; }
+.msg.verdict-correct { border-left: 4px solid var(--good); }
+.thinking { color: var(--muted); font-style: italic; }
+.composer { border-top: 1px solid var(--line); padding: 12px 16px 16px; display: grid; gap: 10px; }
+.composer textarea { width: 100%; min-height: 84px; resize: vertical; background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 10px 12px; font-size: 15px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.btn { border: 1px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 9px 14px; font-weight: 900; font-size: 14px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.ghost { background: transparent; }
+.choices { display: grid; gap: 8px; }
+.opt { display: flex; gap: 10px; align-items: flex-start; text-align: left; width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 10px 12px; font-weight: 700; font-size: 15px; line-height: 1.4; }
+.opt .key { font-family: var(--mono); font-size: 13px; color: var(--muted); padding-top: 1px; flex: none; }
+.opt[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--bg)); }
+.opt.wrong { border-color: var(--bad); opacity: .6; }
+.opt.right { border-color: var(--good); background: color-mix(in srgb, var(--good) 14%, var(--bg)); }
+.opt:disabled { cursor: default; }
+.stuck { display: grid; gap: 8px; padding: 12px; border-radius: 14px; background: var(--surface-2); }
+.stuck p { margin: 0; font-size: 14px; color: var(--muted); font-weight: 700; }
+.note { font-size: 13px; color: var(--muted); font-weight: 700; }
+.summary { display: grid; gap: 10px; }
+.summary .score { display: flex; gap: 14px; font-weight: 900; }
+.summary .score span { font-family: var(--mono); }
+.rail-tabs { display: flex; gap: 4px; padding: 10px 12px 0; border-bottom: 1px solid var(--line); }
+.rail-tabs button { flex: 1; background: none; border: 0; padding: 8px 10px 10px; font-weight: 900; font-size: 15px; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.rail-tabs button[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--accent); }
+.pane { display: flex; flex-direction: column; flex: 1; min-height: 0; min-width: 0; }
+.prof-intro { font-size: 14px; color: var(--muted); font-weight: 700; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chips button { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 6px 12px; font-weight: 800; font-size: 13px; text-align: left; }
+.chips button:hover { border-color: var(--accent); }
+.msg.prof-msg { background: var(--surface-2); border-bottom-left-radius: 4px; max-width: 100%; }
+.msg.prof-msg ul, .msg.prof-msg ol { margin: 4px 0 8px; padding-left: 20px; }
+.msg.prof-msg pre { overflow-x: auto; background: var(--bg); border-radius: 10px; padding: 10px 12px; margin: 6px 0; }
+.msg.prof-msg pre code { font-size: 13px; }
+.msg.prof-msg pre, .msg.prof-msg table { max-width: 100%; }
+.msg.prof-msg table { display: block; overflow-x: auto; border-collapse: collapse; font-size: 14px; margin: 6px 0; }
+.msg.prof-msg th, .msg.prof-msg td { border-bottom: 1px solid var(--line); padding: 4px 8px; text-align: left; vertical-align: top; overflow-wrap: normal; min-width: 6ch; }
+.msg.prof-msg a { color: var(--accent-text); }
+.msg.prof-msg h1, .msg.prof-msg h2, .msg.prof-msg h3 { font-size: 15px; margin: 8px 0 4px; }
+
+/* library */
+.section-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 56px 0 16px; flex-wrap: wrap; }
+.section-title h2 { font-size: 28px; font-weight: 900; letter-spacing: -.5px; }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.filters button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 12px; font-weight: 800; font-size: 13px; }
+.filters button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.filters input { flex: 1 1 220px; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: 14px; }
+.lib { display: grid; gap: 2px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.lrow { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 14px 18px; background: var(--surface); border: 0; text-align: left; width: 100%; }
+.lrow:hover { background: var(--surface-2); }
+.lrow[aria-current="true"] { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.lrow .num { font-family: var(--mono); font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+.lrow .t { font-weight: 900; font-size: 17px; }
+.lrow .tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.tag { font-family: var(--mono); font-size: 11px; color: var(--muted); background: var(--surface-2); padding: 2px 7px; border-radius: 6px; }
+.lrow .right { display: grid; justify-items: end; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 700; }
+.pill { font-size: 11px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+.pill.done { background: color-mix(in srgb, var(--good) 18%, var(--surface)); color: var(--good); }
+@media (max-width: 560px) { .lrow { grid-template-columns: 40px minmax(0, 1fr); } .lrow .right { grid-column: 2; justify-items: start; } }
+.empty { padding: 28px; text-align: center; color: var(--muted); font-weight: 700; background: var(--surface); }
+
+/* progress */
+.boxes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.box { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: grid; gap: 4px; }
+.box b { font-family: var(--mono); font-size: 26px; font-variant-numeric: tabular-nums; }
+.box span { font-size: 13px; color: var(--muted); font-weight: 800; }
+.box small { font-size: 12px; color: var(--muted); }
+@media (max-width: 560px) { .boxes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.catchup { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 4px 0 20px; padding: 12px 14px; border-radius: 16px; background: color-mix(in srgb, var(--accent) 10%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--line)); }
+.catchup strong { font-weight: 900; margin-right: 4px; }
+.catchup button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-weight: 800; font-size: 13px; text-align: left; }
+.catchup button span { font-family: var(--mono); color: var(--muted); margin-right: 6px; }
+.toc-link { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 6px 14px; font-weight: 900; font-size: 14px; }
+.banner { margin: 8px 0 20px; padding: 14px 18px; border-radius: 14px; border: 1px dashed var(--line); color: var(--muted); font-weight: 700; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="moon" aria-hidden="true"></span>Night School</div>
+    <div class="stats" id="stats">
+      <button class="toc-link" id="toc-link">Contents</button>
+      <span class="stat">Lessons <b id="st-lessons">0</b></span>
+      <span class="stat">Streak <b id="st-streak">0</b> days</span>
+      <span class="stat">Reviews due <b id="st-due">0</b></span>
+    </div>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+  <div id="catchup" class="catchup" hidden></div>
+
+  <div class="grid">
+    <section aria-labelledby="lesson-title">
+      <div class="head">
+        <div class="meta"><span id="l-chip" class="chip">Waiting for lessons</span><span id="l-num"></span><span id="l-date"></span></div>
+        <h1 id="lesson-title">Tonight's lesson appears here</h1>
+        <div class="time" id="l-time" hidden></div>
+        <div class="sub" id="l-sub">Every night a new lesson is written, voiced and rendered. Watch it here, then prove you got it in the quiz.</div>
+      </div>
+      <div class="player" id="player">
+        <video id="video" controls preload="metadata" playsinline hidden></video>
+        <div class="pending" id="pending"><strong>No video yet</strong><span>The video shows up once tonight's lesson has been rendered and uploaded.</span></div>
+      </div>
+      <nav class="chapters" id="chapters" aria-label="Chapters"></nav>
+      <div class="objectives" id="objectives" hidden>
+        <h3>After this lesson you should be able to</h3>
+        <ul id="obj-list"></ul>
+      </div>
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-notes" aria-selected="true" aria-controls="panel-notes">Recap</button>
+        <button role="tab" id="tab-deep" aria-selected="false" aria-controls="panel-deep">Deep dive · optional</button>
+        <button role="tab" id="tab-transcript" aria-selected="false" aria-controls="panel-transcript">Transcript</button>
+      </div>
+      <article class="prose" id="panel-notes" role="tabpanel" aria-labelledby="tab-notes"><p>A two-minute written recap of the selected lesson.</p></article>
+      <article class="prose" id="panel-deep" role="tabpanel" aria-labelledby="tab-deep" hidden><p>Optional: the real mechanics, numbers and trade-offs, for when you want to go further.</p></article>
+      <article class="prose transcript" id="panel-transcript" role="tabpanel" aria-labelledby="tab-transcript" hidden></article>
+    </section>
+
+    <aside class="tutor" aria-label="Quiz and professor">
+      <div class="rail-tabs" role="tablist">
+        <button role="tab" id="rt-quiz" aria-selected="true" aria-controls="quiz-pane">Quiz</button>
+        <button role="tab" id="rt-prof" aria-selected="false" aria-controls="prof-pane">Ask the professor</button>
+      </div>
+      <div class="pane" id="quiz-pane" role="tabpanel" aria-labelledby="rt-quiz">
+      <header>
+        <div class="row"><h2 id="tutor-title">Quiz</h2><div class="dots" id="dots"></div></div>
+        <div class="qcard" id="qcard">
+          <div class="qtag" id="qtag">Socratic tutor</div>
+          <div class="qtext" id="qtext">Watch the lesson, then start the quiz. You get clues, never the answer.</div>
+        </div>
+      </header>
+      <div class="thread" id="thread" aria-live="polite"></div>
+      <div class="composer" id="composer">
+        <div id="stuck" class="stuck" hidden>
+          <p>Out of hints. Rewatch the part that covers this, or break it down into smaller steps.</p>
+          <div class="actions" style="justify-content:flex-start">
+            <button class="btn" id="btn-rewatch">Rewatch</button>
+            <button class="btn" id="btn-breakdown">Break it down</button>
+            <button class="btn ghost" id="btn-giveup">Give up</button>
+          </div>
+        </div>
+<div id="choices" class="choices" role="group" aria-label="Options" hidden></div>
+        <textarea id="answer" placeholder="Your answer, in your own words…" aria-label="Your answer" hidden></textarea>
+        <div class="actions" id="actions">
+          <button class="btn" id="btn-hint" hidden>Hint</button>
+          <button class="btn primary" id="btn-send" hidden>Answer</button>
+          <button class="btn primary" id="btn-check" hidden>Check</button>
+          <button class="btn primary" id="btn-start" disabled>Start quiz</button>
+          <button class="btn primary" id="btn-next" hidden>Next question</button>
+          <button class="btn" id="btn-bonus" hidden>Bonus question</button>
+        </div>
+        <div class="note" id="tutor-note"></div>
+      </div>
+      </div>
+      <div class="pane" id="prof-pane" role="tabpanel" aria-labelledby="rt-prof" hidden>
+        <header>
+          <div class="row"><h2>Professor</h2><button class="btn ghost" id="p-new" hidden>New chat</button></div>
+          <div class="prof-intro" id="p-intro">Didn't quite get something? Ask. The professor explains with analogies, then shows the real mechanism.</div>
+        </header>
+        <div class="thread" id="pthread" aria-live="polite"></div>
+        <div class="composer">
+          <div class="chips" id="pchips"></div>
+          <textarea id="pq" placeholder="Ask anything about this lesson, or beyond it…" aria-label="Your question for the professor"></textarea>
+          <div class="actions">
+            <button class="btn" id="p-stop" hidden>Stop</button>
+            <button class="btn primary" id="p-send">Ask</button>
+          </div>
+          <div class="note" id="p-note"></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <div class="section-title" id="library"><h2>All lessons</h2><span class="note" id="lib-count"></span></div>
+  <div class="filters" id="filters">
+    <button data-track="" aria-pressed="true">All</button>
+    <span id="track-filters" style="display: contents"></span>
+    <button data-track="todo" aria-pressed="false">To do</button>
+    <input id="search" type="search" placeholder="Search titles and tags…" aria-label="Search lessons">
+  </div>
+  <div class="lib" id="lib"><div class="empty">Lessons you've received will be listed here, newest first, tagged by subject.</div></div>
+
+  <div class="section-title"><h2>Memory</h2><span class="note">Concepts by spaced-repetition box. Box 1 comes back tomorrow, box 5 in about a month.</span></div>
+  <div class="boxes" id="boxes"></div>
+</div>
+
+<script>
+(() => {
+  // Learner profile, lesson days and tracks: the `meta/config` document (scripts/config-doc.mjs).
+  const COLORS = ['purple', 'orange', 'blue', 'teal', 'pink', 'green', 'yellow', 'red'];
+  const trackKeys = () => [...new Set([...(state.config?.tracks || []).map((t) => t.key), ...[...state.lessons].reverse().map((l) => l.track)])];
+  const trackInfo = (key) => {
+    const t = (state.config?.tracks || []).find((x) => x.key === key);
+    const l = state.lessons.find((x) => x.track === key);
+    const color = t?.color || l?.trackColor || COLORS[Math.max(0, trackKeys().indexOf(key)) % COLORS.length];
+    return { name: t?.name || l?.trackName || l?.trackLabel || key, short: t?.short || t?.name || l?.trackName || key, color };
+  };
+  const trackName = (key) => trackInfo(key).name;
+  const paintChip = (el, key) => { el.textContent = trackName(key); el.style.setProperty('--tc', `var(--c-${trackInfo(key).color})`); };
+  // The optional bonus question, from the deep dive.
+  const isBonus = (q) => q.type === 'bonus';
+  const languageName = () => state.config?.languageName || 'English';
+  const learner = () => state.config?.learner || 'An adult learner. Their background is unknown: adapt to their answers.';
+  const INTERVALS = { 1: 1, 2: 3, 3: 7, 4: 16, 5: 35 };
+  const $ = (id) => document.getElementById(id);
+  const today = () => new Date().toLocaleDateString('en-CA');
+  const addDays = (iso, d) => { const t = new Date(iso + 'T12:00:00Z'); t.setUTCDate(t.getUTCDate() + d); return t.toISOString().slice(0, 10); };
+  const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+  const pad = (n) => String(n).padStart(4, '0');
+  // Markdown → sanitized HTML, with fenced code blocks syntax-highlighted (language from the fence, else auto-detected).
+  const md = (s) => {
+    const t = document.createElement('template');
+    t.innerHTML = DOMPurify.sanitize(marked.parse(s || ''));
+    if (window.hljs) for (const c of t.content.querySelectorAll('pre code')) { try { hljs.highlightElement(c); } catch {} }
+    return t.innerHTML;
+  };
+  const store = {
+    get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  };
+
+  const state = {
+    lessons: [], reviews: [], sessions: [], current: null,
+    filter: '', query: '', canSave: false, progress: null,
+    db: null, sample: null, config: null,
+    quiz: null, // { mode: 'lesson'|'review', lesson, items: [...], idx, per: [...] }
+    busy: false, ctl: null,
+  };
+
+  // ------------------------------------------------------------- rendering
+  // Lessons waiting for a quiz (missed days), oldest first, not counting the one on screen.
+  function renderCatchup() {
+    const box = $('catchup');
+    const todo = state.lessons.filter((l) => !quizzed(l.number) && l.number !== state.current?.number).sort((a, b) => a.number - b.number);
+    if (!state.canSave || !state.sessionsLoaded || !todo.length) { box.hidden = true; return; }
+    const head = document.createElement('strong');
+    head.textContent = `${todo.length} lesson${todo.length === 1 ? '' : 's'} to catch up:`;
+    const chips = todo.slice(0, 5).map((l) => {
+      const b = document.createElement('button');
+      const n = document.createElement('span'); n.textContent = '#' + l.number;
+      b.append(n, document.createTextNode(l.title));
+      b.onclick = () => { select(l.number); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+      return b;
+    });
+    const more = [];
+    if (todo.length > 5) {
+      const b = document.createElement('button');
+      b.textContent = `+${todo.length - 5} more`;
+      b.onclick = () => $('filters').querySelector('[data-track="todo"]').click();
+      more.push(b);
+    }
+    box.replaceChildren(head, ...chips, ...more);
+    box.hidden = false;
+  }
+
+  $('toc-link').onclick = () => $('library').scrollIntoView({ behavior: 'smooth' });
+
+  // Consecutive quiz days, counting back from today (or yesterday, if today's quiz isn't done yet).
+  // A day with no lesson scheduled (a weekend, by default) is skipped, not a break.
+  const WEEKDAYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  const isOffDay = (iso) => {
+    const days = state.config?.schedule?.days?.length ? state.config.schedule.days : ['mon', 'tue', 'wed', 'thu', 'fri'];
+    return !days.includes(WEEKDAYS[new Date(iso + 'T12:00:00Z').getUTCDay()]);
+  };
+  function streakDays(dates) {
+    let streak = 0;
+    for (let d = dates.has(today()) ? today() : addDays(today(), -1); dates.has(d) || isOffDay(d); d = addDays(d, -1)) {
+      if (dates.has(d)) streak++;
+    }
+    return streak;
+  }
+
+  function renderStats() {
+    $('st-lessons').textContent = state.lessons.length;
+    $('st-streak').textContent = streakDays(new Set(state.sessions.map((s) => s.date)));
+    $('st-due').textContent = dueReviews().length;
+  }
+
+  function renderLesson() {
+    const l = state.current;
+    if (!l) return;
+    paintChip($('l-chip'), l.track);
+    $('l-num').textContent = `Lesson ${l.number}`;
+    $('l-date').textContent = l.date;
+    $('lesson-title').textContent = l.title;
+    $('l-sub').textContent = l.subtitle;
+    const v = $('video');
+    if (l.video) {
+      const src = '/_blob/' + l.video;
+      if (v.getAttribute('src') !== src) v.src = src;
+      v.hidden = false; $('pending').hidden = true;
+    } else {
+      v.hidden = true; v.removeAttribute('src'); $('pending').hidden = false;
+    }
+    const ch = $('chapters');
+    ch.replaceChildren(...(l.chapters || []).map((c) => {
+      const b = document.createElement('button');
+      b.dataset.t = c.t;
+      const s = document.createElement('span'); s.textContent = fmt(c.t);
+      b.append(s, document.createTextNode(c.label));
+      b.onclick = () => seek(c.t);
+      return b;
+    }));
+    $('objectives').hidden = !(l.objectives || []).length;
+    $('obj-list').replaceChildren(...(l.objectives || []).map((o) => { const li = document.createElement('li'); li.textContent = o; return li; }));
+    const notes = l.notes || '';
+    const cut = notes.search(/^## Deep dive/m);
+    const gist = (cut >= 0 ? notes.slice(0, cut) : notes).replace(/\n-{3,}\s*$/, '');
+    const deep = cut >= 0 ? notes.slice(cut).replace(/^## Deep dive[^\n]*\n/, '') : '';
+    const words = (t) => (t.match(/\S+/g) || []).length;
+    const deepMin = Math.max(1, Math.round(words(deep) / 200));
+    $('panel-notes').innerHTML = md(gist);
+    $('panel-deep').innerHTML = deep
+      ? `<p class="dd-note">Optional, about ${deepMin} min. For when you want the real mechanics. Nothing in the main quiz depends on it.</p>` + md(deep)
+      : '<p>No deep dive for this lesson.</p>';
+    $('tab-deep').hidden = !deep;
+    $('tab-deep').textContent = `Deep dive · optional · ${deepMin} min`;
+    const qs = mainQs(l);
+    const quizMin = Math.max(2, Math.round(qs.reduce((a, q) => a + (q.format === 'choice' ? 0.75 : 2.5), 0)));
+    const vidMin = Math.max(1, Math.round((l.durationSec || 0) / 60));
+    const t = $('l-time');
+    t.innerHTML = '';
+    for (const [label, val, cls] of [['Today', `≈ ${vidMin + quizMin} min`, ''], ['Video', fmt(l.durationSec || 0), ''], ['Quiz', `~${quizMin} min`, ''], ...(deep ? [['Deep dive', `${deepMin} min`, 'opt']] : [])]) {
+      const sp = document.createElement('span'); if (cls) sp.className = cls;
+      sp.append(document.createTextNode(label + ' '));
+      const b = document.createElement('b'); b.textContent = val; sp.append(b);
+      if (cls) sp.append(document.createTextNode(' · optional'));
+      t.append(sp);
+    }
+    t.hidden = false;
+    const tr = $('panel-transcript');
+    tr.replaceChildren(...(l.transcript || []).map((s) => {
+      const p = document.createElement('p');
+      const c = (l.chapters || []).find((x) => x.id === s.id);
+      if (c) { const b = document.createElement('button'); b.textContent = fmt(c.t); b.onclick = () => seek(c.t); p.append(b); }
+      p.append(document.createTextNode(s.text));
+      return p;
+    }));
+    renderLibrary();
+    if (state.quiz && state.quiz.lesson !== l.number && !state.quiz.done) clearDraft();
+    if (!state.quiz || state.quiz.lesson !== l.number) resetTutor();
+    loadProf(l);
+  }
+
+  function seek(t) {
+    const v = $('video');
+    if (v.hidden) return;
+    v.currentTime = t;
+    v.play().catch(() => {});
+    $('player').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  $('video').addEventListener('timeupdate', () => {
+    const t = $('video').currentTime;
+    const btns = [...$('chapters').children];
+    let cur = null;
+    for (const b of btns) if (Number(b.dataset.t) <= t + 0.2) cur = b;
+    for (const b of btns) b.setAttribute('aria-current', b === cur ? 'true' : 'false');
+  });
+
+  function quizzed(n) { return state.sessions.some((s) => s.lesson === n); }
+
+  function renderLibrary() {
+    renderCatchup();
+    const q = state.query.trim().toLowerCase();
+    const rows = state.lessons.filter((l) =>
+      (!state.filter || (state.filter === 'todo' ? !quizzed(l.number) : l.track === state.filter)) &&
+      (!q || l.title.toLowerCase().includes(q) || (l.tags || []).some((t) => t.includes(q)) || (l.subtitle || '').toLowerCase().includes(q)));
+    $('lib-count').textContent = state.lessons.length ? `${rows.length} of ${state.lessons.length}` : '';
+    const lib = $('lib');
+    if (!rows.length) {
+      const e = document.createElement('div'); e.className = 'empty';
+      e.textContent = state.lessons.length ? 'No lesson matches this filter.' : 'Lessons you receive will be listed here, newest first, tagged by subject.';
+      lib.replaceChildren(e); return;
+    }
+    lib.replaceChildren(...rows.map((l) => {
+      const b = document.createElement('button');
+      b.className = 'lrow';
+      b.setAttribute('aria-current', state.current?.number === l.number ? 'true' : 'false');
+      b.innerHTML = `<span class="num"></span><span><span class="chip"></span><div class="t"></div><div class="tags"></div></span><span class="right"><span class="d"></span><span class="pill"></span></span>`;
+      b.querySelector('.num').textContent = '#' + l.number;
+      paintChip(b.querySelector('.chip'), l.track);
+      b.querySelector('.t').textContent = l.title;
+      b.querySelector('.tags').replaceChildren(...(l.tags || []).map((t) => { const s = document.createElement('span'); s.className = 'tag'; s.textContent = t; return s; }));
+      b.querySelector('.d').textContent = l.date;
+      const pill = b.querySelector('.pill');
+      pill.textContent = quizzed(l.number) ? 'Quizzed' : 'New';
+      if (quizzed(l.number)) pill.classList.add('done');
+      b.onclick = () => { select(l.number); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+      return b;
+    }));
+  }
+
+  function renderBoxes() {
+    const counts = [1, 2, 3, 4, 5].map((n) => state.reviews.filter((r) => r.box === n).length);
+    const labels = ['Shaky', 'Learning', 'Getting there', 'Solid', 'Mastered'];
+    const days = ['tomorrow', 'in 3 days', 'in a week', 'in ~2 weeks', 'in ~a month'];
+    $('boxes').replaceChildren(...counts.map((c, i) => {
+      const d = document.createElement('div'); d.className = 'box';
+      d.innerHTML = '<span></span><b></b><small></small>';
+      d.querySelector('span').textContent = `Box ${i + 1} · ${labels[i]}`;
+      d.querySelector('b').textContent = c;
+      d.querySelector('small').textContent = `Next review ${days[i]}`;
+      return d;
+    }));
+  }
+
+  function select(n) {
+    const l = state.lessons.find((x) => x.number === n);
+    if (!l) return;
+    state.current = l;
+    try { history.replaceState(null, '', '#L' + pad(n)); } catch {}
+    renderLesson();
+  }
+
+  // tabs
+  const TABS = [['tab-notes', 'panel-notes'], ['tab-deep', 'panel-deep'], ['tab-transcript', 'panel-transcript']];
+  for (const [tab, panel] of TABS) {
+    $(tab).onclick = () => {
+      for (const [t, p] of TABS) {
+        $(t).setAttribute('aria-selected', t === tab ? 'true' : 'false');
+        $(p).hidden = p !== panel;
+      }
+    };
+  }
+  // filters: All, one per track, To do
+  function renderFilters() {
+    const keys = trackKeys();
+    if (state.filter && state.filter !== 'todo' && !keys.includes(state.filter)) state.filter = '';
+    $('track-filters').replaceChildren(...keys.map((k) => {
+      const b = document.createElement('button');
+      b.dataset.track = k;
+      b.textContent = trackInfo(k).short;
+      return b;
+    }));
+    for (const x of $('filters').querySelectorAll('button')) x.setAttribute('aria-pressed', x.dataset.track === state.filter ? 'true' : 'false');
+  }
+  $('filters').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-track]');
+    if (!b) return;
+    state.filter = b.dataset.track;
+    renderFilters();
+    renderLibrary();
+  });
+  $('search').addEventListener('input', (e) => { state.query = e.target.value; renderLibrary(); });
+
+  // ------------------------------------------------------------- tutor
+  function dueReviews() {
+    const d = today();
+    return state.reviews.filter((r) => r.due && r.due <= d).sort((a, b) => a.box - b.box || a.due.localeCompare(b.due));
+  }
+
+  function addMsg(kind, text, { html = false, log = true } = {}) {
+    const m = document.createElement('div');
+    m.className = 'msg ' + kind;
+    if (html) m.innerHTML = md(text); else m.textContent = text;
+    $('thread').append(m);
+    $('thread').scrollTop = $('thread').scrollHeight;
+    if (log) logMsg(kind, text, html);
+    return m;
+  }
+  function logMsg(kind, text, html) {
+    const qz = state.quiz;
+    if (!qz || qz.done || !qz.per[qz.idx]) return;
+    (qz.per[qz.idx].log ||= []).push({ kind, text, html });
+    saveDraft();
+  }
+
+  // ---- in-progress quiz survives republishes (hot snapshot), reloads and other devices (db draft)
+  function snapshotQuiz() {
+    const qz = state.quiz;
+    if (!qz || qz.done) return null;
+    return {
+      v: 1, mode: qz.mode, lesson: qz.lesson, idx: qz.idx,
+      items: qz.items.map((it) => ({ lesson: it.lesson.number, qid: it.q.id, question: it.q.question, fresh: !!it.fresh, review: !!it.review })),
+      per: qz.per, draft: $('answer').value,
+    };
+  }
+  let saveTimer = null, saving = Promise.resolve();
+  function saveDraft() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => {
+      const snap = snapshotQuiz();
+      store.set('ns-quiz-draft', snap);
+      if (!state.canSave || !state.progress) return;
+      const ref = state.progress.collection('drafts').doc('current');
+      saving = saving.then(() => (snap ? ref.set({ json: JSON.stringify(snap), at: Date.now() }) : ref.delete())).catch(() => {});
+    }, 700);
+  }
+  function clearDraft() {
+    clearTimeout(saveTimer);
+    store.set('ns-quiz-draft', null);
+    if (state.canSave && state.progress) saving = saving.then(() => state.progress.collection('drafts').doc('current').delete()).catch(() => {});
+  }
+  async function loadDraft() {
+    if (state.hotDraft) return state.hotDraft;
+    if (state.canSave && state.progress) {
+      try {
+        const d = await state.progress.collection('drafts').doc('current').get();
+        if (d.exists) return JSON.parse(d.data().json);
+      } catch {}
+    }
+    return store.get('ns-quiz-draft');
+  }
+  async function tryRestore() {
+    if (state.restoreTried || !state.lessons.length || !state.progressReady) return;
+    state.restoreTried = true;
+    const d = await loadDraft();
+    if (!d || d.v !== 1 || state.quiz) return;
+    const items = d.items.map((x) => {
+      const l = state.lessons.find((L) => L.number === x.lesson);
+      const orig = l?.quiz?.find((q) => q.id === x.qid);
+      return orig ? { q: { ...orig, question: x.question }, lesson: l, fresh: x.fresh, review: x.review } : null;
+    });
+    if (!items.length || items.some((x) => !x) || d.per.length !== items.length) return;
+    state.quiz = { mode: d.mode, lesson: d.lesson, idx: d.idx, items, per: d.per };
+    const l = state.lessons.find((L) => L.number === d.lesson);
+    if (l) { state.current = l; renderLesson(); }
+    await openQuestion({ restore: true, draft: d.draft });
+  }
+
+  function show(ids, on) { for (const id of ids) $(id).hidden = !on; }
+
+  function resetTutor() {
+    state.quiz = null;
+    $('thread').replaceChildren();
+    $('dots').replaceChildren();
+    $('qtag').textContent = 'Socratic tutor';
+    const l = state.current;
+    const due = dueReviews().length;
+    $('qtext').textContent = l
+      ? (quizzed(l.number) ? `You've already been quizzed on this lesson. Retake it, or work through your ${due} due review${due === 1 ? '' : 's'}.` : `${mainQs(l).length} questions on “${l.title}”${bonusQs(l).length ? ', plus an optional bonus from the deep dive' : ''}. You get clues, never the answer.`)
+      : 'Watch the lesson, then start the quiz. You get clues, never the answer.';
+    show(['answer', 'btn-send', 'btn-hint', 'btn-next', 'stuck', 'choices', 'btn-check', 'btn-bonus'], false);
+    show(['btn-start'], true);
+    $('btn-start').textContent = l && quizzed(l.number) && due ? `Start ${due} review${due === 1 ? '' : 's'}` : 'Start quiz';
+    $('btn-start').disabled = !l || !state.sample;
+    $('tutor-note').textContent = !state.sample ? 'The tutor needs Claude, available when this page is open in Claude.' : (state.canSave ? '' : 'Sign in with Contributor access to save your progress; your answers stay on this screen.');
+  }
+
+  function renderDots() {
+    const q = state.quiz;
+    $('dots').replaceChildren(...q.per.map((p, i) => {
+      const d = document.createElement('span');
+      d.className = 'dot ' + (p.status !== 'open' ? p.status : i === q.idx ? 'cur' : '');
+      d.title = `Q${i + 1}: ${p.status}`;
+      return d;
+    }));
+  }
+
+  const mainQs = (l) => (l.quiz || []).filter((q) => !isBonus(q));
+  const bonusQs = (l) => (l.quiz || []).filter(isBonus);
+
+  function startBonus() {
+    const l = state.lessons.find((x) => x.number === state.quiz?.lesson) || state.current;
+    const items = bonusQs(l).map((q) => ({ q, lesson: l }));
+    if (!items.length) return;
+    state.quiz = { mode: 'bonus', lesson: l.number, items, idx: 0, per: items.map(() => ({ status: 'open', hints: 0, turns: [], stuck: false })) };
+    $('btn-bonus').hidden = true;
+    openQuestion();
+  }
+  $('btn-bonus').onclick = startBonus;
+
+  function startLessonQuiz() {
+    const l = state.current;
+    state.quiz = { mode: 'lesson', lesson: l.number, items: mainQs(l).map((q) => ({ q, lesson: l })), idx: 0, per: [] };
+    state.quiz.per = state.quiz.items.map(() => ({ status: 'open', hints: 0, turns: [], stuck: false }));
+    openQuestion();
+  }
+
+  async function startReviews() {
+    const due = dueReviews().slice(0, 3);
+    const items = [];
+    for (const r of due) {
+      const l = state.lessons.find((x) => x.number === r.lesson);
+      const orig = l?.quiz?.find((q) => q.id === r.question) || l?.quiz?.find((q) => q.concept === r.concept);
+      if (orig) items.push({ q: { ...orig }, lesson: l, review: r });
+    }
+    if (!items.length) { addMsg('sys', 'No reviews due. Come back tomorrow.'); return; }
+    state.quiz = { mode: 'review', lesson: state.current.number, items, idx: 0, per: items.map(() => ({ status: 'open', hints: 0, turns: [], stuck: false })) };
+    openQuestion();
+  }
+
+  async function openQuestion({ restore = false, draft = '' } = {}) {
+    const qz = state.quiz;
+    const it = qz.items[qz.idx];
+    const p = qz.per[qz.idx];
+    renderDots();
+    $('thread').replaceChildren();
+    if (restore) {
+      it.fresh = true;
+      for (const m of p.log || []) addMsg(m.kind, m.text, { html: m.html, log: false });
+    } else {
+      p.log = [];
+    }
+    show(['btn-start', 'btn-next', 'stuck', 'btn-bonus'], false);
+    $('qtag').textContent = qz.mode === 'bonus'
+      ? `Bonus · optional · from the deep dive · ${it.q.concept}`
+      : `${qz.mode === 'review' ? `Review · Lesson ${it.lesson.number}: ${it.lesson.title} · ` : ''}Q${qz.idx + 1} of ${qz.items.length} · ${isBonus(it.q) ? 'from the deep dive' : 'from the video'} · ${it.q.concept}`;
+    const isChoice = it.q.format === 'choice';
+    if (qz.mode === 'review' && !it.fresh && !isChoice) {
+      $('qtext').textContent = 'Writing a fresh question on this concept…';
+      try {
+        const out = await state.sample.json(
+          `Rewrite this quiz question so it tests the SAME concept and can be graded with the SAME rubric, but is phrased differently or applied to a new, concrete situation, so it can't be answered by recalling the original wording. Keep the difficulty (the learner: ${learner()}). Write it in ${languageName()}. Reply with only JSON: {"question": "..."}\n\nOriginal question: ${it.q.question}\nRubric: ${it.q.rubric.join(' | ')}`,
+          { modelTier: 'quick', cache: false });
+        if (out && typeof out.question === 'string') it.q.question = out.question;
+      } catch (e) { /* fall back to the original wording */ }
+      it.fresh = true;
+    }
+    $('qtext').textContent = it.q.question;
+    if (restore && p.status !== 'open') {
+      show(['answer', 'btn-send', 'btn-hint', 'choices', 'btn-check'], false);
+      if (isChoice) { renderChoices(it, { restore: true }); $('choices').hidden = false; lockChoices(); }
+      $('btn-next').hidden = qz.idx >= qz.items.length - 1;
+      return;
+    }
+    if (isChoice) {
+      renderChoices(it, { restore });
+      show(['answer', 'btn-send'], false);
+      show(['choices', 'btn-hint'], true);
+      $('btn-hint').hidden = !(it.q.hints || []).length;
+      $('btn-check').hidden = !it.q.multi;
+      updateHintBtn();
+      return;
+    }
+    show(['choices', 'btn-check'], false);
+    show(['answer', 'btn-send', 'btn-hint'], true);
+    updateHintBtn();
+    $('answer').value = restore ? draft || '' : '';
+    if (!restore) saveDraft();
+    $('answer').focus({ preventScroll: true });
+  }
+
+  // ---- pick-one / pick-all questions, graded right here in the page
+  function renderChoices(it, { restore = false } = {}) {
+    const p = state.quiz.per[state.quiz.idx];
+    let opts = it.q.options.map((o, i) => ({ ...o, i }));
+    if (restore && Array.isArray(p.order) && p.order.length === opts.length) {
+      opts = p.order.map((i) => opts[i]);
+    } else {
+      for (let i = opts.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [opts[i], opts[j]] = [opts[j], opts[i]]; }
+      p.order = opts.map((o) => o.i); p.marks = {}; p.pressed = [];
+    }
+    const box = $('choices');
+    box.replaceChildren(...opts.map((o, k) => {
+      const b = document.createElement('button');
+      b.className = 'opt';
+      b.dataset.i = o.i;
+      b.setAttribute('aria-pressed', 'false');
+      const key = document.createElement('span'); key.className = 'key'; key.textContent = 'ABCDEF'[k];
+      const txt = document.createElement('span'); txt.textContent = o.text;
+      b.append(key, txt);
+      b.onclick = () => {
+        if (!it.q.multi) return pickSingle(it, b);
+        const on = b.getAttribute('aria-pressed') !== 'true';
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        p.pressed = [...$('choices').children].filter((x) => x.getAttribute('aria-pressed') === 'true').map((x) => Number(x.dataset.i));
+        saveDraft();
+      };
+      const mark = (p.marks || {})[o.i];
+      if (mark) { b.classList.add(mark); if (mark === 'wrong') b.disabled = true; }
+      if ((p.pressed || []).includes(o.i)) b.setAttribute('aria-pressed', 'true');
+      return b;
+    }));
+    if (it.q.multi && !restore) addMsg('sys', 'Select every option that applies, then Check.');
+  }
+  function markOpt(b, mark) {
+    const p = state.quiz.per[state.quiz.idx];
+    b.classList.add(mark);
+    (p.marks ||= {})[b.dataset.i] = mark;
+  }
+
+  function choiceResult(p) { return p.wrong === 0 && p.hints === 0 ? 'solid' : p.wrong <= 1 ? 'hinted' : 'missed'; }
+  function lockChoices() { for (const b of $('choices').children) b.disabled = true; $('btn-check').hidden = true; $('btn-hint').hidden = true; }
+  function revealChoices(it) {
+    for (const b of $('choices').children) if (it.q.options[b.dataset.i].correct) markOpt(b, 'right');
+  }
+
+  async function pickSingle(it, b) {
+    const p = state.quiz.per[state.quiz.idx];
+    const o = it.q.options[b.dataset.i];
+    p.wrong = p.wrong || 0;
+    if (o.correct) {
+      markOpt(b, 'right'); lockChoices();
+      addMsg('tutor-msg verdict-correct', `**${p.wrong ? 'Yes, that one.' : 'Right.'}** ${o.why}`, { html: true });
+      await finishQuestion(choiceResult(p));
+      return;
+    }
+    p.wrong++;
+    markOpt(b, 'wrong'); b.disabled = true;
+    if (p.wrong >= 2) {
+      lockChoices(); revealChoices(it);
+      const right = it.q.options.find((x) => x.correct);
+      addMsg('tutor-msg', `**Not quite.** ${o.why}\n\nThe answer is highlighted: ${right.why}`, { html: true });
+      await finishQuestion('missed');
+    } else {
+      addMsg('tutor-msg', `**Not quite.** ${o.why} Try another one.`, { html: true });
+    }
+  }
+
+  $('btn-check').onclick = async () => {
+    const qz = state.quiz; const it = qz.items[qz.idx]; const p = qz.per[qz.idx];
+    p.wrong = p.wrong || 0;
+    const btns = [...$('choices').children];
+    const picked = btns.filter((b) => b.getAttribute('aria-pressed') === 'true');
+    if (!picked.length) { addMsg('sys', 'Select at least one option.'); return; }
+    const wrongPicks = picked.filter((b) => !it.q.options[b.dataset.i].correct);
+    const missing = btns.filter((b) => it.q.options[b.dataset.i].correct && b.getAttribute('aria-pressed') !== 'true').length;
+    if (!wrongPicks.length && !missing) {
+      lockChoices(); revealChoices(it);
+      addMsg('tutor-msg verdict-correct', `**${p.wrong ? 'Yes, that\'s the full set.' : 'Right, all of them.'}**\n\n` + it.q.options.filter((o) => o.correct).map((o) => `- ${o.why}`).join('\n'), { html: true });
+      await finishQuestion(choiceResult(p));
+      return;
+    }
+    p.wrong++;
+    const lines = wrongPicks.map((b) => `- “${it.q.options[b.dataset.i].text}”: ${it.q.options[b.dataset.i].why}`);
+    for (const b of wrongPicks) { markOpt(b, 'wrong'); b.setAttribute('aria-pressed', 'false'); b.disabled = true; }
+    p.pressed = (p.pressed || []).filter((i) => !wrongPicks.some((b) => Number(b.dataset.i) === i));
+    if (p.wrong >= 2) {
+      lockChoices(); revealChoices(it);
+      addMsg('tutor-msg', `**Not quite.**${lines.length ? '\n\n' + lines.join('\n') : ''}\n\nThe full set is highlighted.`, { html: true });
+      await finishQuestion('missed');
+      return;
+    }
+    const parts = [];
+    if (lines.length) parts.push(`${lines.length === 1 ? 'One pick is' : lines.length + ' picks are'} wrong:\n\n${lines.join('\n')}`);
+    if (missing) parts.push(`You're also missing ${missing === 1 ? 'one correct option' : missing + ' correct options'}.`);
+    addMsg('tutor-msg', `**Not quite.** ${parts.join('\n\n')}\n\nOne more try.`, { html: true });
+  };
+
+  function updateHintBtn() {
+    const qz = state.quiz; const it = qz.items[qz.idx]; const p = qz.per[qz.idx];
+    const left = (it.q.hints || []).length - p.hints;
+    $('btn-hint').textContent = left > 0 ? `Hint (${left} left)` : 'Stuck?';
+  }
+
+  $('btn-hint').onclick = () => {
+    const qz = state.quiz; const it = qz.items[qz.idx]; const p = qz.per[qz.idx];
+    if (p.hints < (it.q.hints || []).length) {
+      const h = it.q.hints[p.hints++];
+      addMsg('hint', h);
+      p.turns.push({ who: 'hint', text: h });
+      updateHintBtn();
+    } else if (it.q.format !== 'choice') {
+      p.stuck = true;
+      const ch = it.lesson.chapters?.find((c) => c.id === it.q.scene);
+      $('btn-rewatch').textContent = ch && !isBonus(it.q) ? `Rewatch “${ch.label}” (${fmt(ch.t)})` : 'Reread the deep dive';
+      $('stuck').hidden = false;
+    }
+  };
+
+  $('btn-rewatch').onclick = () => {
+    const it = state.quiz.items[state.quiz.idx];
+    if (it.lesson.number !== state.current.number) select(it.lesson.number);
+    const ch = it.lesson.chapters?.find((c) => c.id === it.q.scene);
+    if (ch && !isBonus(it.q)) seek(ch.t); else { $('tab-deep').click(); $('panel-deep').scrollIntoView({ behavior: 'smooth' }); }
+    addMsg('sys', 'Take your time. Answer when you\'re ready.');
+  };
+  $('btn-breakdown').onclick = () => ask('breakdown');
+  $('btn-giveup').onclick = () => {
+    const qz = state.quiz; const it = qz.items[qz.idx];
+    addMsg('tutor-msg', '**A complete answer covers:**\n\n' + it.q.rubric.map((r) => '- ' + r).join('\n') + '\n\nThis concept will come back tomorrow.', { html: true });
+    finishQuestion('missed');
+  };
+
+  $('btn-send').onclick = () => ask('evaluate');
+  $('answer').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); ask('evaluate'); } });
+
+  function tutorPrompt(it, p, mode) {
+    const l = it.lesson;
+    const scene = (l.transcript || []).find((s) => s.id === it.q.scene);
+    const attempt = p.turns.filter((t) => t.who === 'me' && !t.clarify).length;
+    const convo = [`Tutor: ${it.q.question}`, ...p.turns.map((t) => t.who === 'me' ? `Learner: ${t.text}` : t.who === 'hint' ? `(Hint shown to learner: ${t.text})` : `Tutor: ${t.text}`)].join('\n');
+    const evidence = (it.q.evidence || []).map((e) => '- "' + e + '"').join('\n') || '(see the scene text below)';
+    return `You are the tutor of "Night School", quizzing a learner on a short lesson video they just watched. The goal is understanding, not exact wording.
+
+THE LEARNER: ${learner()}
+LANGUAGE: always reply in ${languageName()}, the language of the lesson.
+
+LESSON: #${l.number} "${l.title}" (${trackName(l.track)})
+QUESTION (${it.q.type}): ${it.q.question}
+
+WHAT THE LESSON ACTUALLY SAID (the ONLY material you may expect them to know${isBonus(it.q) ? '; this question is based on the written deep dive' : ''}):
+${evidence}
+Scene narration: ${scene ? scene.text : '(n/a)'}
+
+PRIVATE RUBRIC (core ideas; "Bonus" points are never required). Don't recite it:
+${it.q.rubric.map((r) => '- ' + r).join('\n')}
+COMMON MISCONCEPTIONS: ${(it.q.misconceptions || []).join('; ') || 'none listed'}
+
+CONVERSATION SO FAR:
+${convo}
+
+This is the learner's attempt ${attempt} of 3 on this question (questions they asked you don't count as attempts).
+${mode === 'breakdown' ? 'The learner is stuck and asked to break it down: ask ONE smaller, easier question that is a real step toward the core idea.' : ''}
+Tone: warm and encouraging, but calibrated. Feedback must always be true. "Good instinct", "that's close", "you're on the right track" are welcome ONLY when they really apply. Never use them to soften a wrong answer, and never let a wrong or vague answer pass as correct. When something is wrong, say clearly that it's not right (kindly, e.g. "Not quite: …") and why, without giving the answer. Name misconceptions explicitly.
+
+How to grade and respond:
+- Grade the IDEA, not the wording: their own words are fine, and never fish for exact terms, step sizes or details the lesson didn't state. But vague or hand-wavy isn't fine: if you can't tell whether they really understand, make them commit to something concrete (an example, a prediction, a yes/no).
+- A different but valid approach counts. Say it's valid, then explain in one sentence how the lesson's approach differs. Example: they reach the right result by a valid shortcut instead of the lesson's step-by-step method.
+- Grade CUMULATIVELY: their answer is everything they've written on this question so far, not just the last message. If their turns taken together contain every core idea, the verdict is correct, even if no single message has it all.
+- Equivalent statements count. A point stated in other words, from the other direction, or as something that logically implies it, is covered. Example: "prices rise when buyers compete for too few items" and "when supply can't keep up with demand, prices go up" are the same idea. Never require the rubric's phrasing, a keyword or a particular framing, and never ask them to restate in other words something they've already said.
+- Before choosing partial, ask yourself: would a fair human teacher, reading all their turns, conclude they understand the core idea? If yes, it's correct.
+- If the learner's latest message is a question to you (what do you mean, can you clarify, is X allowed) rather than an attempt at an answer: answer it directly and concretely, restate what you're asking if useful, and end with [[verdict: clarify]]. It doesn't count as an attempt.
+- Your own wording must be concrete: name exactly what you mean (e.g. "the price after tax is added"), never vague phrases like "the total" or "it".
+- If an analogy or image (in a hint or an earlier tutor turn) didn't help, the learner is still stuck: never reuse or reword it. Switch to a different angle, preferably the concrete mechanism (a tiny example, real numbers).
+- If their answer is correct for a reasonable reading of the question that isn't the intended one, say so honestly ("That's right for X; what I'm after is Y"), credit it, and restate precisely what you're asking. Don't treat it as wrong, and don't apologize at length.
+- partial: say what's genuinely right, say clearly that it's not complete yet, then ask ONE pointed question about the most important missing core idea. Don't repeat a question you already asked.
+- incorrect: say clearly that it's not right and why it doesn't hold, in one sentence, without giving the answer. If part of their reasoning really is a good instinct, you may say so. Then ask ONE question that makes them confront the flaw (a counter-example works well).
+- Attempt 3 or later: stop asking questions. If they have the core idea, verdict correct and fill any remaining gap yourself in at most 2 plain sentences. If not, verdict incorrect and teach the key idea in at most 3 plain sentences.
+- When correct: confirm it warmly but briefly. You may add ONE extra detail that goes slightly beyond the video (an edge case or real-world example), clearly marked as a bonus.
+- At most 80 words. Plain words, no math notation. Markdown only for \`code\` and **bold**.
+End with a final line that is exactly one of: [[verdict: correct]] [[verdict: partial]] [[verdict: incorrect]] [[verdict: clarify]]`;
+  }
+
+  async function ask(mode) {
+    if (state.busy) return;
+    const qz = state.quiz; const it = qz.items[qz.idx]; const p = qz.per[qz.idx];
+    const text = $('answer').value.trim();
+    if (mode === 'evaluate') {
+      if (!text) { $('answer').focus(); return; }
+      addMsg('me', text);
+      p.turns.push({ who: 'me', text });
+      $('answer').value = '';
+    } else {
+      addMsg('sys', 'Let\'s break it down.');
+    }
+    $('stuck').hidden = true;
+    state.busy = true;
+    for (const id of ['btn-send', 'btn-hint']) $(id).disabled = true;
+    const bubble = addMsg('tutor-msg thinking', 'Thinking…', { log: false });
+    state.ctl = new AbortController();
+    const strip = (s) => s.replace(/\[\[verdict:[^\]]*\]\]\s*$/i, '').replace(/\[\[[^\]]*$/, '').trim();
+    try {
+      const { text: reply } = await state.sample(tutorPrompt(it, p, mode), {
+        cache: false, signal: state.ctl.signal,
+        onText: ({ text: t }) => { bubble.classList.remove('thinking'); bubble.innerHTML = md(strip(t)); $('thread').scrollTop = $('thread').scrollHeight; },
+      });
+      const verdict = (reply.match(/\[\[verdict:\s*(correct|partial|incorrect|clarify)\]\]/i) || [])[1]?.toLowerCase() || 'partial';
+      if (verdict === 'clarify' && mode === 'evaluate') { const mine = p.turns.filter((t) => t.who === 'me'); if (mine.length) mine[mine.length - 1].clarify = true; }
+      const clean = strip(reply);
+      bubble.classList.remove('thinking');
+      bubble.innerHTML = md(clean);
+      logMsg('tutor-msg' + (verdict === 'correct' ? ' verdict-correct' : ''), clean, true);
+      p.turns.push({ who: 'tutor', text: clean });
+      const attempts = p.turns.filter((t) => t.who === 'me' && !t.clarify).length;
+      if (verdict === 'correct') {
+        bubble.classList.add('verdict-correct');
+        await finishQuestion(p.hints === 0 && !p.stuck && attempts <= 2 ? 'solid' : 'hinted');
+      } else if (mode === 'evaluate' && attempts >= 3) {
+        const ch = it.lesson.chapters?.find((c) => c.id === it.q.scene);
+        if (ch) addMsg('sys', `This one comes back tomorrow. Rewatch "${ch.label}" at ${fmt(ch.t)} if you want to see it again.`);
+        await finishQuestion('missed');
+      } else if (p.hints >= (it.q.hints || []).length && mode === 'evaluate') {
+        updateHintBtn();
+      }
+    } catch (e) {
+      bubble.classList.remove('thinking');
+      bubble.textContent = e?.text ? strip(e.text) : '';
+      if (e?.text) logMsg('tutor-msg', strip(e.text), false);
+      const copy = { not_granted: 'The tutor needs permission to use Claude. Allow it when asked, then try again.', rate_limited: 'Too many requests right now. Wait a moment and send again.', cancelled: 'Stopped.' }[e?.code] || 'The tutor couldn\'t answer. Send your answer again in a moment.';
+      addMsg('sys', copy);
+    } finally {
+      state.busy = false;
+      for (const id of ['btn-send', 'btn-hint']) $(id).disabled = false;
+    }
+  }
+
+  async function finishQuestion(result) {
+    const qz = state.quiz; const it = qz.items[qz.idx]; const p = qz.per[qz.idx];
+    p.status = result;
+    renderDots();
+    show(['answer', 'btn-send', 'btn-hint', 'stuck', 'btn-check'], false);
+    await record(it, result);
+    saveDraft();
+    if (qz.idx < qz.items.length - 1) {
+      $('btn-next').hidden = false;
+      $('btn-next').focus({ preventScroll: true });
+    } else {
+      await finishQuiz();
+    }
+  }
+
+  $('btn-next').onclick = () => { state.quiz.idx++; openQuestion(); };
+  $('answer').addEventListener('input', () => { if (state.quiz) saveDraft(); });
+
+  async function finishQuiz() {
+    const qz = state.quiz;
+    clearDraft();
+    qz.done = true;
+    const c = { solid: 0, hinted: 0, missed: 0 };
+    for (const p of qz.per) c[p.status] = (c[p.status] || 0) + 1;
+    if (qz.mode === 'lesson' && state.canSave) {
+      try { await state.progress.collection('sessions').doc(`${today()}_${pad(qz.lesson)}`).set({ date: today(), lesson: qz.lesson, ...c }); } catch {}
+    }
+    const due = dueReviews().length;
+    const box = document.createElement('div'); box.className = 'msg sys summary';
+    box.innerHTML = `<div class="score">Solid <span>${c.solid}</span> · With hints <span>${c.hinted}</span> · Missed <span>${c.missed}</span></div><div></div>`;
+    box.lastChild.textContent = c.missed ? 'Missed concepts come back tomorrow. Rewatch their chapters tonight.' : 'Nice. These concepts come back in a few days to make them stick.';
+    if (qz.mode === 'bonus') box.firstChild.firstChild.textContent = 'Bonus · Solid ';
+    $('thread').append(box);
+    $('qtext').textContent = { lesson: 'Quiz complete.', bonus: 'Bonus done.', review: 'Reviews complete.' }[qz.mode];
+    $('qtag').textContent = 'Done';
+    const lesson = state.lessons.find((x) => x.number === qz.lesson);
+    if (qz.mode === 'lesson' && lesson && bonusQs(lesson).length) {
+      $('btn-bonus').hidden = false;
+      $('btn-bonus').textContent = 'Bonus question from the deep dive (optional)';
+    }
+    if (qz.mode !== 'review' && due) { $('btn-start').hidden = false; $('btn-start').textContent = `Start ${due} review${due === 1 ? '' : 's'}`; }
+  }
+
+  $('btn-start').onclick = () => {
+    if (!state.current) return;
+    const wantReviews = (state.quiz?.done) || (quizzed(state.current.number) && dueReviews().length);
+    if (wantReviews) startReviews(); else startLessonQuiz();
+  };
+
+  // Leitner boxes, stored as reviews/<lesson>__<concept>
+  async function record(it, result) {
+    if (!state.canSave) return;
+    const id = `${pad(it.lesson.number)}__${it.q.concept}`;
+    const prev = state.reviews.find((r) => r._id === id);
+    let box = prev?.box ?? 0;
+    if (result === 'solid') box = Math.min(5, Math.max(1, box + 1));
+    else if (result === 'hinted') box = Math.max(1, box);
+    else box = 1;
+    const doc = {
+      lesson: it.lesson.number, concept: it.q.concept, track: it.lesson.track, question: it.q.id,
+      box, due: addDays(today(), result === 'missed' ? 1 : INTERVALS[box]),
+      history: [...(prev?.history || []), { date: today(), result }].slice(-20),
+    };
+    try { await state.progress.collection('reviews').doc(id).set(doc); }
+    catch (e) { if (e?.code === 'invalid_argument') state.canSave = false; addMsg('sys', 'Couldn\'t save this result (your access may be view-only). Your answer still counts on screen.'); }
+  }
+
+  // ------------------------------------------------------------- professor
+  // A free-form chat that explains (unlike the quiz, which only gives clues).
+  // One conversation per lesson, kept in the viewer's private progress (or this browser).
+  const prof = { lesson: null, msgs: [], busy: false, ctl: null, token: 0 };
+  const RAIL = [['rt-quiz', 'quiz-pane'], ['rt-prof', 'prof-pane']];
+  for (const [tab, pane] of RAIL) {
+    $(tab).onclick = () => {
+      for (const [t, p] of RAIL) { $(t).setAttribute('aria-selected', t === tab ? 'true' : 'false'); $(p).hidden = p !== pane; }
+      store.set('ns-rail', tab);
+      if (tab === 'rt-prof') { renderProf(); $('pq').focus({ preventScroll: true }); }
+    };
+  }
+  if (store.get('ns-rail') === 'rt-prof') $('rt-prof').click();
+
+  function profAdd(kind, text) {
+    const m = document.createElement('div');
+    m.className = 'msg ' + kind;
+    if (kind === 'prof-msg') m.innerHTML = md(text); else m.textContent = text;
+    $('pthread').append(m);
+    $('pthread').scrollTop = $('pthread').scrollHeight;
+    return m;
+  }
+
+  function chapterAt(l, t) {
+    let cur = null;
+    for (const c of l.chapters || []) if (c.t <= t + 0.2) cur = c;
+    return cur;
+  }
+
+  function renderProfChips() {
+    const l = state.current;
+    const chips = [];
+    if (l) {
+      const v = $('video');
+      const c = !v.hidden && v.currentTime > 2 ? chapterAt(l, v.currentTime) : null;
+      if (c) chips.push(`Explain the part I just watched: “${c.label}” (${fmt(c.t)})`);
+      chips.push('Explain the big idea of this lesson simply, with an analogy');
+      chips.push('Walk me through a tiny worked example, with real numbers');
+      chips.push('Go deeper: where does this show up in the real world?');
+    }
+    $('pchips').replaceChildren(...chips.map((t) => {
+      const b = document.createElement('button');
+      b.textContent = t;
+      b.onclick = () => askProf(t);
+      return b;
+    }));
+    $('pchips').hidden = !l || prof.msgs.length > 0 || prof.busy;
+  }
+
+  function renderProf() {
+    const l = state.current;
+    $('pthread').replaceChildren();
+    for (const m of prof.msgs) profAdd(m.role === 'user' ? 'me' : 'prof-msg', m.text);
+    $('p-new').hidden = !prof.msgs.length || prof.busy;
+    $('p-intro').textContent = l
+      ? `Questions about “${l.title}”. The professor explains with analogies, then shows the real mechanism.`
+      : 'Didn\'t quite get something? Ask. The professor explains with analogies, then shows the real mechanism.';
+    $('p-send').disabled = !l || !state.sample || prof.busy;
+    $('pq').disabled = !l || !state.sample;
+    $('p-note').textContent = !state.sample ? 'The professor needs Claude, available when this page is open in Claude.' : '';
+    renderProfChips();
+  }
+
+  async function loadProf(l) {
+    if (prof.lesson === l.number) return;
+    if (prof.busy) { prof.ctl?.abort(); prof.busy = false; $('p-stop').hidden = true; }
+    const token = ++prof.token;
+    prof.lesson = l.number;
+    prof.msgs = store.get('ns-prof-' + pad(l.number)) || [];
+    renderProf();
+    if (state.canSave && state.progress) {
+      try {
+        const d = await state.progress.collection('chats').doc(pad(l.number)).get();
+        if (token !== prof.token || prof.busy) return;
+        if (d.exists) { prof.msgs = JSON.parse(d.data().json) || []; renderProf(); }
+      } catch {}
+    }
+  }
+
+  function saveProf() {
+    const n = prof.lesson;
+    if (n == null) return;
+    store.set('ns-prof-' + pad(n), prof.msgs.length ? prof.msgs : null);
+    if (!state.canSave || !state.progress) return;
+    const ref = state.progress.collection('chats').doc(pad(n));
+    (prof.msgs.length ? ref.set({ lesson: n, json: JSON.stringify(prof.msgs), at: Date.now() }) : ref.delete()).catch(() => {});
+  }
+
+  $('p-new').onclick = () => { prof.msgs = []; saveProf(); renderProf(); $('pq').focus({ preventScroll: true }); };
+  $('p-stop').onclick = () => prof.ctl?.abort();
+  $('p-send').onclick = () => askProf($('pq').value);
+  $('pq').addEventListener('keydown', (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); askProf($('pq').value); } });
+  $('video').addEventListener('pause', () => { if (!$('prof-pane').hidden && !prof.msgs.length) renderProfChips(); });
+
+  function profContext(l) {
+    const chapters = (l.chapters || []).map((c) => `- ${fmt(c.t)} "${c.label}" (scene ${c.id})`).join('\n');
+    const transcript = (l.transcript || []).map((s) => `[${s.id}] ${s.text}`).join('\n');
+    const others = state.lessons.filter((x) => x.number !== l.number).map((x) => `#${x.number} ${x.title} (${x.track})`).join('; ');
+    const qz = state.quiz;
+    const openQ = qz && !qz.done && qz.lesson === l.number && qz.per[qz.idx]?.status === 'open' ? qz.items[qz.idx].q.question : '';
+    return `You are "the Professor" of Night School, a personal learning routine: every night the learner gets a short animated explainer video plus written notes, then a Socratic quiz. You are the separate place they come to when they want to go deeper or didn't quite understand something.
+
+THE LEARNER: ${learner()}
+LANGUAGE: reply in ${languageName()}, the language of the lessons, unless the learner writes to you in another language.
+
+YOUR JOB: teach. Unlike the quiz, you DO explain things directly.
+- Vulgarize first, then sharpen: start with intuition and a vivid metaphor or everyday analogy, then land on the precise mechanism with the correct vocabulary (a tiny concrete example, real numbers, a few lines of code when it helps and the learner is technical). An analogy is a ladder, not the destination.
+- Start from exactly what they asked. If the question is vague, name what is probably confusing, address that, and check whether that was it.
+- If a metaphor or image didn't land (they're still confused after it), drop it for good: never rephrase it or come back to it. Switch to a different angle, preferably the concrete mechanism itself.
+- Bridge to what the learner already knows (their field and experience, from the profile above) when the comparison is accurate.
+- Ground answers in the lesson when relevant: point to a chapter by name and timestamp, or to a section of the notes or deep dive. Going beyond the lesson is welcome: say so when you do.
+- Be technically precise. If something is uncertain or debated, say so. Never invent papers, numbers or quotes.
+- Math: plain words first. Define every symbol and term the first time. No LaTeX: use Unicode or \`code\`.
+- Keep it focused: about 120 to 250 words unless they ask for more. Short paragraphs, markdown allowed (bold, lists, \`code\`, fenced code blocks).
+- End with ONE short question that checks their understanding or offers the natural next step. It is not graded.
+${openQ ? `- The learner is in the middle of this lesson's quiz. The open question is: "${openQ}". Don't answer that question for them: if they ask it, help with the underlying idea from a different angle and encourage them to answer it themselves in the quiz.\n` : ''}- Don't spell out answers to the lesson's quiz questions in general; explaining the concepts is fine.
+
+LESSON #${l.number}: "${l.title}" — ${l.subtitle || ''} (${trackName(l.track)}, ${l.date})
+Objectives:
+${(l.objectives || []).map((o) => '- ' + o).join('\n')}
+
+Chapters (video timestamps):
+${chapters || '(none)'}
+
+Narration, by scene:
+${transcript || '(none)'}
+
+Written notes (recap, then the optional deep dive):
+${l.notes || '(none)'}
+
+Other Night School lessons, for cross-references: ${others || '(none yet)'}`;
+  }
+
+  async function askProf(text) {
+    text = (text || '').trim();
+    const l = state.current;
+    if (!text || !l || !state.sample || prof.busy) return;
+    if (prof.lesson !== l.number) await loadProf(l);
+    $('pq').value = '';
+    prof.msgs.push({ role: 'user', text });
+    profAdd('me', text);
+    prof.busy = true;
+    $('pchips').hidden = true; $('p-new').hidden = true;
+    $('p-send').disabled = true; $('p-stop').hidden = false;
+    const bubble = profAdd('prof-msg thinking', 'Thinking…');
+    const token = prof.token;
+    prof.ctl = new AbortController();
+    // Memoryless model: resend the lesson context with the recent conversation (it must start on a user turn).
+    let hist = prof.msgs.slice(-16);
+    while (hist.length && hist[0].role !== 'user') hist = hist.slice(1);
+    const input = hist.map((m, i) => ({
+      role: m.role,
+      content: i === 0 ? `${profContext(l)}\n\n---\nThe learner asks:\n${m.text}` : m.text,
+    }));
+    try {
+      const { text: reply } = await state.sample(input, {
+        cache: false, signal: prof.ctl.signal,
+        onText: ({ text: t }) => { if (token !== prof.token) return; bubble.classList.remove('thinking'); bubble.innerHTML = md(t); $('pthread').scrollTop = $('pthread').scrollHeight; },
+      });
+      if (token !== prof.token) return;
+      bubble.classList.remove('thinking');
+      bubble.innerHTML = md(reply);
+      prof.msgs.push({ role: 'assistant', text: reply });
+      saveProf();
+    } catch (e) {
+      if (token !== prof.token) return;
+      bubble.classList.remove('thinking');
+      if (e?.text) {
+        bubble.innerHTML = md(e.text);
+        prof.msgs.push({ role: 'assistant', text: e.text });
+        saveProf();
+      } else {
+        bubble.remove();
+        prof.msgs.pop();
+        $('pthread').lastElementChild?.remove();
+        $('pq').value = text;
+      }
+      const copy = { not_granted: 'The professor needs permission to use Claude. Allow it when asked, then ask again.', rate_limited: 'Too many requests right now. Wait a moment and ask again.', cancelled: 'Stopped.' }[e?.code] || 'The professor couldn\'t answer. Ask again in a moment.';
+      profAdd('sys', copy);
+    } finally {
+      if (token === prof.token) {
+        prof.busy = false;
+        $('p-send').disabled = false; $('p-stop').hidden = true;
+        $('p-new').hidden = !prof.msgs.length;
+      }
+    }
+  }
+
+  // ------------------------------------------------------------- boot
+  resetTutor();
+  renderBoxes();
+
+  // A republish reloads open views; the viewer's hot hook hands the in-progress quiz to the new version.
+  const hot = window.claude?.hot;
+  hot?.snapshot?.(() => ({ quiz: snapshotQuiz() }));
+  const start = (data) => { state.hotDraft = data?.quiz || null; boot(); };
+  if (hot?.ready) hot.ready(start); else start(hot?.data ?? {});
+
+  async function boot() {
+    const claude = window.claude;
+    if (!claude?.use) { banner('Open this page in Claude to load your lessons.'); return; }
+    const [db, user, sample] = await Promise.all([claude.use('db'), claude.use('user'), claude.use('sample')]);
+    state.sample = sample;
+    renderProf();
+    if (!db) { banner('Sign in to Claude to load your lessons.'); resetTutor(); return; }
+    // (progress and drafts load below; tryRestore waits for both lessons and progress)
+    state.db = db;
+    resetTutor();
+    db.collection('meta').doc('config').onSnapshot((d) => {
+      state.config = d.exists ? d.data() : null;
+      renderFilters(); renderStats();
+      if (state.current) paintChip($('l-chip'), state.current.track);
+      renderLibrary();
+    }, () => {});
+    db.collection('lessons').orderBy('number', 'desc').onSnapshot((snap) => {
+      state.lessons = snap.docs.map((d) => d.data()).filter((l) => l && typeof l.number === 'number');
+      renderFilters(); renderStats();
+      const want = Number((location.hash.match(/^#L(\d{1,4})$/) || [])[1]);
+      const keep = state.current && state.lessons.find((l) => l.number === state.current.number);
+      const pick = keep || state.lessons.find((l) => l.number === want) || state.lessons[0];
+      if (pick) { state.current = pick; renderLesson(); } else renderLibrary();
+      tryRestore();
+    }, () => banner('Lessons couldn\'t load. Reload the page to try again.'));
+    const uid = user ? await user.id() : null;
+    if (uid) {
+      state.progress = db.doc(`data/users/${uid}/progress`);
+      state.canSave = true;
+      resetTutor();
+      if (state.current) { prof.lesson = null; loadProf(state.current); }
+      state.progress.collection('reviews').onSnapshot((snap) => {
+        state.reviews = snap.docs.map((d) => ({ _id: d.id, ...d.data() }));
+        renderStats(); renderBoxes();
+        if (!state.quiz) resetTutor();
+      }, () => {});
+      state.progress.collection('sessions').onSnapshot((snap) => {
+        state.sessions = snap.docs.map((d) => d.data());
+        state.sessionsLoaded = true;
+        renderStats(); renderLibrary();
+        if (!state.quiz) resetTutor();
+      }, () => {});
+    }
+    state.progressReady = true;
+    tryRestore();
+  }
+
+  function banner(text) { $('banner').textContent = text; $('banner').hidden = false; }
+})();
+</script>

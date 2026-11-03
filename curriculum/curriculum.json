@@ -1,0 +1,94 @@
+{
+  "learner": "Not set up yet: run /setup in Claude Code to describe the learner.",
+  "language": "en",
+  "timezone": "UTC",
+  "schedule": {
+    "days": [
+      "mon",
+      "wed",
+      "fri"
+    ],
+    "time": "05:00"
+  },
+  "rotation": [
+    "science",
+    "history"
+  ],
+  "rotationNote": "Example curriculum: /setup replaces it with yours. One lesson per lesson day, alternating tracks.",
+  "tracks": {
+    "science": {
+      "name": "Everyday Science",
+      "short": "Science",
+      "label": "Everyday science, explained",
+      "color": "teal",
+      "voice": "af_heart",
+      "goal": "Understand the physics and chemistry behind things you see every day.",
+      "lessons": [
+        {
+          "id": "science-01",
+          "title": "Why the sky is blue",
+          "concepts": [
+            "light as waves",
+            "wavelength",
+            "scattering"
+          ]
+        },
+        {
+          "id": "science-02",
+          "title": "How a fridge makes cold",
+          "concepts": [
+            "heat flow",
+            "evaporation",
+            "compression"
+          ]
+        },
+        {
+          "id": "science-03",
+          "title": "What fire actually is",
+          "concepts": [
+            "oxidation",
+            "fuel, heat and oxygen",
+            "flames as glowing gas"
+          ]
+        }
+      ]
+    },
+    "history": {
+      "name": "World History",
+      "short": "History",
+      "label": "How the world got this way",
+      "color": "orange",
+      "voice": "bm_george",
+      "goal": "Connect a few big turning points to the world we live in.",
+      "lessons": [
+        {
+          "id": "history-01",
+          "title": "Writing: the first database",
+          "concepts": [
+            "clay tablets",
+            "accounting",
+            "cuneiform"
+          ]
+        },
+        {
+          "id": "history-02",
+          "title": "The printing press",
+          "concepts": [
+            "movable type",
+            "cost of a book",
+            "spread of ideas"
+          ]
+        },
+        {
+          "id": "history-03",
+          "title": "Railways and time zones",
+          "concepts": [
+            "local solar time",
+            "train timetables",
+            "standard time"
+          ]
+        }
+      ]
+    }
+  }
+}

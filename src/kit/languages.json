@@ -1,0 +1,57 @@
+{
+  "en": {
+    "name": "English",
+    "pronunciation": { "a": "en-us", "b": "en-gb" },
+    "voices": ["af_heart", "af_alloy", "af_aoede", "af_bella", "af_jessica", "af_kore", "af_nicole", "af_nova", "af_river", "af_sarah", "af_sky", "am_adam", "am_echo", "am_eric", "am_fenrir", "am_liam", "am_michael", "am_onyx", "am_puck", "am_santa", "bf_alice", "bf_emma", "bf_isabella", "bf_lily", "bm_daniel", "bm_fable", "bm_george", "bm_lewis"],
+    "ui": { "lesson": "LESSON {n}", "prove": ["Now, ", "prove it."], "objectives": "After this lesson you should be able to:", "quiz": "Quiz time → open Claude Code and run" }
+  },
+  "fr": {
+    "name": "French",
+    "pronunciation": { "f": "fr-fr" },
+    "voices": ["ff_siwis"],
+    "ui": { "lesson": "LEÇON {n}", "prove": ["Maintenant, ", "à vous de jouer."], "objectives": "Après cette leçon, vous devriez savoir :", "quiz": "C'est l'heure du quiz → ouvrez Claude Code et lancez" }
+  },
+  "es": {
+    "name": "Spanish",
+    "pronunciation": { "e": "es" },
+    "voices": ["ef_dora", "em_alex", "em_santa"],
+    "ui": { "lesson": "LECCIÓN {n}", "prove": ["Ahora, ", "demuéstralo."], "objectives": "Después de esta lección deberías poder:", "quiz": "Hora del quiz → abre Claude Code y ejecuta" }
+  },
+  "it": {
+    "name": "Italian",
+    "pronunciation": { "i": "it" },
+    "voices": ["if_sara", "im_nicola"],
+    "ui": { "lesson": "LEZIONE {n}", "prove": ["Ora, ", "dimostralo."], "objectives": "Dopo questa lezione dovresti essere in grado di:", "quiz": "È l'ora del quiz → apri Claude Code ed esegui" }
+  },
+  "pt-br": {
+    "name": "Brazilian Portuguese",
+    "pronunciation": { "p": "pt-br" },
+    "voices": ["pf_dora", "pm_alex", "pm_santa"],
+    "ui": { "lesson": "AULA {n}", "prove": ["Agora, ", "mostre o que aprendeu."], "objectives": "Depois desta aula, você deve saber:", "quiz": "Hora do quiz → abra o Claude Code e execute" }
+  },
+  "hi": {
+    "name": "Hindi",
+    "pronunciation": { "h": "hi" },
+    "voices": ["hf_alpha", "hf_beta", "hm_omega", "hm_psi"],
+    "font": "NotoSansDevanagari",
+    "ui": { "lesson": "पाठ {n}", "prove": ["अब, ", "साबित कीजिए।"], "objectives": "इस पाठ के बाद आप यह कर पाएँगे:", "quiz": "क्विज़ का समय → Claude Code खोलें और चलाएँ" }
+  },
+  "ja": {
+    "name": "Japanese",
+    "experimental": true,
+    "spaces": false,
+    "pronunciation": { "j": "ja" },
+    "voices": ["jf_alpha", "jf_gongitsune", "jf_nezumi", "jf_tebukuro", "jm_kumo"],
+    "font": "NotoSansJP",
+    "ui": { "lesson": "レッスン {n}", "prove": ["さあ、", "確かめよう。"], "objectives": "このレッスンのあとにできること：", "quiz": "クイズの時間 → Claude Code を開いて実行：" }
+  },
+  "zh": {
+    "name": "Mandarin Chinese",
+    "experimental": true,
+    "spaces": false,
+    "pronunciation": { "z": "cmn" },
+    "voices": ["zf_xiaobei", "zf_xiaoni", "zf_xiaoxiao", "zf_xiaoyi", "zm_yunjian", "zm_yunxi", "zm_yunxia", "zm_yunyang"],
+    "font": "NotoSansSC",
+    "ui": { "lesson": "第 {n} 课", "prove": ["现在，", "来验证一下。"], "objectives": "学完这一课，你应该能够：", "quiz": "测验时间 → 打开 Claude Code 并运行" }
+  }
+}

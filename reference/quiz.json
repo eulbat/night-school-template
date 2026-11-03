@@ -1,0 +1,135 @@
+{
+  "questions": [
+    {
+      "id": "q1",
+      "concept": "why-the-sky-is-blue",
+      "type": "explain",
+      "scene": "blue-sky",
+      "evidence": [
+        "So white light is really every colour, travelling together.",
+        "Here's the key: short waves get scattered far more than long ones.",
+        "Any light reaching you from there was scattered toward your eyes on its way through the air."
+      ],
+      "question": "Sunlight is white, yet a patch of clear sky far from the sun looks blue. In your own words, where does that blue light come from?",
+      "hints": [
+        "Start from what white sunlight is made of.",
+        "That patch of sky isn't the sun. How did any light from that direction end up heading toward you?",
+        "When light gets sent off in a new direction by the air, which colours does that happen to most?"
+      ],
+      "rubric": [
+        "Sunlight is a mix of all colours",
+        "Light from a patch of sky away from the sun is light the air scattered toward you",
+        "Short (blue) waves are scattered much more than long (red) ones, so that scattered light is mostly blue"
+      ],
+      "misconceptions": [
+        "Thinking the sky reflects the blue of the oceans",
+        "Thinking air molecules are blue, or absorb every colour except blue"
+      ]
+    },
+    {
+      "id": "q2",
+      "concept": "scattered-light-reaches-you",
+      "type": "predict",
+      "format": "choice",
+      "scene": "blue-sky",
+      "evidence": [
+        "Any light reaching you from there was scattered toward your eyes on its way through the air.",
+        "On the Moon, with no air to scatter anything, the sky is black, even at noon."
+      ],
+      "question": "You climb a very high mountain, with much less air above you. At noon, compared with the sky at sea level, the sky overhead looks…",
+      "hints": [],
+      "options": [
+        { "text": "A darker, deeper blue", "correct": true, "why": "Less air above you means less light scattered toward you from the sky, so it looks darker: a step of the way toward the Moon's black sky." },
+        { "text": "A brighter, whiter blue", "correct": false, "why": "Brightness of the sky comes from scattered light, and with less air above you there is less of it, not more." },
+        { "text": "More violet, because you're closer to the sun", "correct": false, "why": "A few kilometres changes nothing about your distance to the sun; what changes is how much air there is to scatter light." },
+        { "text": "Exactly the same, because the sunlight is the same", "correct": false, "why": "The sunlight is the same, but the sky's glow depends on how much air scatters it toward you." }
+      ]
+    },
+    {
+      "id": "q3",
+      "concept": "rayleigh-scattering",
+      "type": "explain",
+      "format": "choice",
+      "scene": "scattering",
+      "evidence": [
+        "A passing light wave shakes the electrons inside a molecule, and they send out light of their own, in every direction.",
+        "Shorter waves shake them faster, and faster shaking sends out much more light."
+      ],
+      "question": "What actually happens when air scatters light?",
+      "hints": [],
+      "options": [
+        { "text": "The wave shakes the molecule's electrons, and they send out light of their own in every direction", "correct": true, "why": "Scattering is re-radiation: the shaken electrons become tiny light sources." },
+        { "text": "Molecules soak up blue light and glow blue afterwards", "correct": false, "why": "Nothing is stored or glows later: the electrons send light back out while the wave is passing." },
+        { "text": "Light bounces off molecules the way a ball bounces off a wall", "correct": false, "why": "A bounce would treat all colours the same; scattering depends strongly on wavelength because of how fast the electrons are shaken." },
+        { "text": "Blue light is made in the air by the sun's heat", "correct": false, "why": "The blue was already in sunlight; the air only sends it in new directions." }
+      ]
+    },
+    {
+      "id": "q4",
+      "concept": "sunset-colours",
+      "type": "apply",
+      "format": "choice",
+      "scene": "sunset",
+      "evidence": [
+        "Along that long path, most of the blue is scattered away before it ever reaches you.",
+        "Same rule, opposite side: the scattered light is blue, and the light that gets through is red."
+      ],
+      "question": "A long glass tank holds water with a few drops of milk, whose tiny particles scatter light like air does. A white lamp shines in at one end. Seen from the side, the tank glows faintly blue. What colour does the lamp look when you peer at it through the far end of the tank?",
+      "hints": [],
+      "options": [
+        { "text": "Orange-ish", "correct": true, "why": "Along the tank, blue is scattered out sideways (that's the blue glow), so the light that makes it through is left orange: a sunset in a tank." },
+        { "text": "Blue, like the side of the tank", "correct": false, "why": "The blue went sideways: that's what you saw from the side. It's missing from the light that comes straight through." },
+        { "text": "White, since water doesn't change the light", "correct": false, "why": "The milk particles scatter blue out of the beam, so the light that gets through is no longer the full mix." },
+        { "text": "Violet, because violet scatters most", "correct": false, "why": "Violet scattering most means it is removed most from the straight-through beam, not added to it." }
+      ]
+    },
+    {
+      "id": "q5",
+      "concept": "why-not-violet",
+      "type": "explain",
+      "scene": "not-violet",
+      "evidence": [
+        "First, sunlight contains less violet than blue to begin with, and some of it is absorbed high in the atmosphere.",
+        "Second, our eyes are much less sensitive to violet than to blue."
+      ],
+      "question": "Violet waves are shorter than blue ones, so they scatter even more. Give two reasons the sky still looks blue to us rather than violet.",
+      "hints": [
+        "Think about how much violet there is in sunlight to start with.",
+        "Then think about what happens high up in the atmosphere, before the light gets down to you.",
+        "And finally: what about the instrument doing the looking, your eyes?"
+      ],
+      "rubric": [
+        "Any two of: sunlight contains less violet than blue; some violet is absorbed high in the atmosphere; our eyes are much less sensitive to violet than to blue"
+      ],
+      "misconceptions": [
+        "Thinking violet doesn't scatter at all",
+        "Thinking the sky really is blue only because blue scatters most, with nothing else involved"
+      ]
+    },
+    {
+      "id": "q6",
+      "concept": "particle-size-and-scattering",
+      "type": "bonus",
+      "scene": "scattering",
+      "evidence": [
+        "Rayleigh's rule only holds for particles much smaller than the wavelength.",
+        "particles that big scatter all colours about equally. Equal amounts of every colour add back up to white"
+      ],
+      "question": "Clouds are made of tiny water droplets, and yet they look white, not blue. Using the deep dive, explain why. What would you expect a sky full of haze or pollution to look like, and why?",
+      "hints": [
+        "Compare the size of a cloud droplet with the size of a light wave, and then with an air molecule.",
+        "Does the 'short waves scatter far more' rule still apply to particles that big?",
+        "If every colour is scattered about equally, what colour does the scattered light add up to?"
+      ],
+      "rubric": [
+        "Cloud droplets are much bigger than the wavelength of light, unlike air molecules, so Rayleigh's rule no longer applies",
+        "Particles that big scatter all colours about equally, and equal amounts of all colours look white",
+        "Haze or pollution with larger particles makes the sky look whiter or milkier, less deep blue"
+      ],
+      "misconceptions": [
+        "Thinking clouds are white because they reflect the sun like a mirror",
+        "Thinking water absorbs the blue"
+      ]
+    }
+  ]
+}

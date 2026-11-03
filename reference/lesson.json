@@ -1,0 +1,97 @@
+{
+  "number": 1,
+  "slug": "why-the-sky-is-blue",
+  "curriculumId": "science-01",
+  "track": "science",
+  "date": "2026-11-03",
+  "title": "Why the Sky Is Blue",
+  "subtitle": "One sunbeam explains blue noons and red sunsets",
+  "tags": ["science", "physics", "light", "wavelength", "rayleigh-scattering"],
+  "objectives": [
+    "Explain why white sunlight is a mix of colours with different wavelengths",
+    "Describe what scattering is, and why short waves scatter far more than long ones",
+    "Use that one rule to explain both the blue sky and red sunsets",
+    "Say why the sky looks blue rather than violet"
+  ],
+  "scenes": [
+    {
+      "id": "hook",
+      "lines": [
+        "The air around you is completely see-through.",
+        "Yet look up on a clear day, and the whole sky glows blue.",
+        "At sunset, that very same sky turns orange and red.",
+        "One simple rule explains both, and it all happens inside a single sunbeam."
+      ]
+    },
+    {
+      "id": "white-light",
+      "lines": [
+        "Start with sunlight itself, which looks white.",
+        "Shine it through a prism, and it fans out into a rainbow, from red to violet.",
+        "So white light is really every colour, travelling together.",
+        "Each colour is a wave, and the only difference between colours is the wave's length.",
+        {
+          "text": "Red waves are long, about 700 nanometres. Blue waves are shorter, about 450.",
+          "say": "Red waves are long, about seven hundred nanometres. Blue waves are shorter, about four hundred and fifty."
+        },
+        "A nanometre is a billionth of a metre, so these waves are very, very small."
+      ]
+    },
+    {
+      "id": "air",
+      "lines": [
+        "Now, the air: mostly nitrogen and oxygen molecules, with lots of empty space between them.",
+        "Each molecule is more than a thousand times smaller than a wave of light.",
+        "Most sunlight sails straight past them, which is why air looks clear up close.",
+        "But now and then, a wave meets a molecule and gets sent off in a random new direction.",
+        "That is called scattering."
+      ]
+    },
+    {
+      "id": "scattering",
+      "lines": [
+        "Here's the key: short waves get scattered far more than long ones.",
+        "A passing light wave shakes the electrons inside a molecule, and they send out light of their own, in every direction.",
+        "Shorter waves shake them faster, and faster shaking sends out much more light.",
+        "Physicists call this Rayleigh scattering: halve the wavelength, and the scattering goes up sixteen times.",
+        "So blue light ends up scattered about six times more than red."
+      ]
+    },
+    {
+      "id": "blue-sky",
+      "lines": [
+        "Now stand on the ground and look at a patch of sky, away from the sun.",
+        "Any light reaching you from there was scattered toward your eyes on its way through the air.",
+        "And scattered light is mostly blue, so the whole sky glows blue.",
+        "On the Moon, with no air to scatter anything, the sky is black, even at noon."
+      ]
+    },
+    {
+      "id": "sunset",
+      "lines": [
+        "At sunset, sunlight reaches you at a low angle, through far more air.",
+        "Along that long path, most of the blue is scattered away before it ever reaches you.",
+        "What's left in the beam is the long-wave light: orange and red.",
+        "Same rule, opposite side: the scattered light is blue, and the light that gets through is red."
+      ]
+    },
+    {
+      "id": "not-violet",
+      "lines": [
+        "One last puzzle: violet waves are even shorter than blue, so why isn't the sky violet?",
+        "First, sunlight contains less violet than blue to begin with, and some of it is absorbed high in the atmosphere.",
+        "Second, our eyes are much less sensitive to violet than to blue.",
+        "Mix it all together, and our eyes read the sky as a soft, pale blue."
+      ]
+    },
+    {
+      "id": "recap",
+      "lines": [
+        "So: sunlight is a mix of colours, each a wave of a different length.",
+        "Air molecules scatter short blue waves far more than long red ones.",
+        "Look away from the sun and you see scattered blue; look through lots of air at sunset and you see the red that's left.",
+        "Next in this track: how a fridge makes cold."
+      ]
+    }
+  ]
+}
