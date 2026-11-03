@@ -54,7 +54,15 @@ jobs:
             for f in lessons/*/lesson.json; do
               n=$(node -p "require('./$f').number")
               tag=$(printf "lesson-%04d" "$n")
-              gh release view "$tag" > /dev/null 2>&1 || todo="$todo $n"
+              # Only a missing release means "render it": a transient API error must not
+              # re-render a lesson that already has its video. Retry once, then skip it.
+              for try in 1 2; do
+                if out=$(gh release view "$tag" --json tagName 2>&1); then break; fi
+                case "$out" in
+                  *"release not found"*) todo="$todo $n"; break ;;
+                  *) [ "$try" = 2 ] && echo "::warning::couldn't check $tag, not rendering it: $out" || sleep 5 ;;
+                esac
+              done
             done
             # Newest two at most, so a backlog can't blow the time budget.
             todo=$(echo $todo | tr ' ' '\n' | sort -n | tail -2 | xargs)
