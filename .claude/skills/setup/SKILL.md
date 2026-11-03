@@ -31,10 +31,12 @@ gh auth status
 Ask in a few short rounds, one topic per round. Use `AskUserQuestion` where there are natural
 options; ask open questions in plain chat. Suggest, don't interrogate: offer good defaults.
 
-1. **Who they are**: role and background, what they already know well, comfort with math, and
-   what they want from this (career move, curiosity, a specific project).
+1. **Who they are**: role and background, what they already know well, and what they want from
+   this (career move, curiosity, a specific project).
 2. **Themes**: 1 to 5 subjects (tracks). For each: what exactly, their current level, anything
-   to skip or emphasise. Propose a good order if they're unsure.
+   to skip or emphasise. Propose a good order if they're unsure. Only if a theme leans on math
+   (physics, AI, finance, music theory…), ask how comfortable they are with it; otherwise don't
+   bring math up.
 3. **Rhythm**: lesson days (every weekday · Mon/Wed/Fri · Tue/Thu · every day) and the time
    the routine runs, at night in their timezone (a few hours before they wake up; detect it with
    `readlink /etc/localtime`). Then the mix: how often each track comes up (e.g. "2 AI for
@@ -57,7 +59,7 @@ Same shape as `.claude/skills/setup/example-curriculum.json` (`npm run check` va
 
 ```json
 {
-  "learner": "2–3 sentences in the third person: background, level, math comfort, what they want.",
+  "learner": "2–3 sentences in the third person: background, level, what they want (and math comfort if a theme needs math).",
   "language": "en",
   "timezone": "America/New_York",
   "schedule": { "days": ["mon", "wed", "fri"], "time": "05:00" },
