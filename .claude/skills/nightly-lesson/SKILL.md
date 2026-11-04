@@ -183,7 +183,7 @@ One component per scene id, keys exactly matching `lesson.json`. Rules of thumb:
 - You may write small local helper components (like `Wave` or `Molecule` in the reference lesson) with inline SVG for
   anything the kit lacks. If a helper is broadly reusable, add it to the kit (with a short doc
   comment) instead, without changing existing component behaviour.
-- Sound: `<Sfx at name="pop|whoosh|ding|click|swell">` on big reveals only (≈ 1–3 per scene).
+- Sound: `<Sfx at name="pop|whoosh|ding|click|swell">` on big reveals only (≈ 1–3 per scene). In a lesson with music lines, `ding` and `swell` are muted automatically (they have a pitch of their own); use `pop`, `click` or `whoosh` there if anything.
 - Music lines: show the notes while they sound. `<PianoRoll line={i} />` draws line `i`'s notes
   as bars that light up as they play; or build your own (a staff, a keyboard, an interval
   ladder) from `useNotes(i)` (each note's `at`, `frames`, `midi`) and `noteName(midi)`. The

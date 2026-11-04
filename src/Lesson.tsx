@@ -255,7 +255,7 @@ export const Lesson: React.FC<LessonProps> = ({ lessonId, timings, captions = tr
         );
         return (
           <Sequence key={s.id} from={o.start} durationInFrames={o.frames} name={s.id}>
-            <SceneContext.Provider value={{ beats, beatEnds, duration: o.frames, notes }}>
+            <SceneContext.Provider value={{ beats, beatEnds, duration: o.frames, notes, musical: musicSpans.length > 0 }}>
               <SceneShell frames={o.frames}>{Visual ? <Visual /> : <Missing id={s.id} />}</SceneShell>
               {captions ? <Caption lines={s.lines} /> : null}
             </SceneContext.Provider>

@@ -309,7 +309,7 @@ def _tone(freq: float, dur: float, instrument: str, sr: int) -> np.ndarray:
     rel = 0.35 if instrument == "piano" else 0.2
     n = int((dur + rel) * sr)
     t = np.arange(n) / sr
-    vib = 1.0
+    vib = np.ones(n)
     if instrument in ("strings", "brass"):
         depth = 0.004 if instrument == "strings" else 0.0025
         vib = 1 + depth * np.sin(2 * np.pi * 5.5 * t) * np.clip((t - 0.25) / 0.3, 0, 1)
@@ -411,7 +411,7 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
 
     digest = hashlib.sha256(
-        json.dumps([meta["scenes"], voice, lang, speed, args.estimate, args.stitched, "one-take-v1", "music-v1"], sort_keys=True).encode()
+        json.dumps([meta["scenes"], voice, lang, speed, args.estimate, args.stitched, "one-take-v1", "music-v2"], sort_keys=True).encode()
     ).hexdigest()
     stamp = out / ".hash"
     if not args.force and stamp.exists() and stamp.read_text() == digest and (out / "timings.json").exists():

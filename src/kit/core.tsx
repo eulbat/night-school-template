@@ -24,6 +24,8 @@ export type SceneInfo = {
   duration: number;
   /** For each line, the notes it plays (music lines only; empty for speech), in scene frames. */
   notes?: NoteEvent[][];
+  /** True when the lesson plays music lines: pitched sound effects then stay silent. */
+  musical?: boolean;
 };
 
 /** One note or chord of a music line: starts at frame `at`, lasts `frames`, MIDI pitches (60 = middle C). */
@@ -251,9 +253,20 @@ export const stagger = (at: number, step: number, i: number) => at + i * step;
 
 export type SfxName = 'pop' | 'whoosh' | 'ding' | 'click' | 'swell';
 
-/** Play a sound effect at a frame. Use sparingly: on big reveals, not every element. */
-export const Sfx: React.FC<{ at: number; name: SfxName; volume?: number }> = ({ at, name, volume = 0.35 }) => (
-  <Sequence from={Math.max(0, Math.round(at))} durationInFrames={60} layout="none">
-    <Html5Audio src={staticFile(`sfx/${name}.wav`)} volume={volume} />
-  </Sequence>
-);
+/** Sound effects with a pitch of their own: they would blur the notes of a musical lesson. */
+const PITCHED: SfxName[] = ['ding', 'swell'];
+
+/**
+ * Play a sound effect at a frame. Use sparingly: on big reveals, not every element.
+ * In a lesson with music lines, pitched effects (ding, swell) are muted so they never compete
+ * with the notes the viewer is listening to.
+ */
+export const Sfx: React.FC<{ at: number; name: SfxName; volume?: number }> = ({ at, name, volume = 0.35 }) => {
+  const { musical } = useContext(SceneContext);
+  if (musical && PITCHED.includes(name)) return null;
+  return (
+    <Sequence from={Math.max(0, Math.round(at))} durationInFrames={60} layout="none">
+      <Html5Audio src={staticFile(`sfx/${name}.wav`)} volume={volume} />
+    </Sequence>
+  );
+};
