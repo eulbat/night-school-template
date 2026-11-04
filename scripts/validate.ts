@@ -50,6 +50,21 @@ const curriculumIds = new Set<string>(
 
 const words = (s: string) => s.split(/\s+/).filter(Boolean).length;
 const lineText = (l: any) => (typeof l === 'string' ? l : l?.text);
+const isMusic = (l: any) => l && typeof l === 'object' && 'notes' in l;
+/** Problems with a music line ({"text", "notes", "bpm"?, "instrument"?}); mirrors parse_notes() in tts.py. */
+const musicProblems = (l: any): string[] => {
+  const out: string[] = [];
+  if (typeof l.notes !== 'string' || !l.notes.trim()) return ['"notes" must be a string like "Bb4:1 F5:3"'];
+  for (const tok of l.notes.trim().split(/\s+/)) {
+    const [pitch, beats = '1'] = tok.split(':');
+    if (!/^(r|[A-Ga-g][#b]?-?\d(\+[A-Ga-g][#b]?-?\d)*)$/.test(pitch)) out.push(`bad pitch in "${tok}" (e.g. Bb4, F#5, Bb3+D4+F4, r)`);
+    const [num, den = '1'] = beats.split('/');
+    if (!(Number(num) > 0 && Number(den) > 0)) out.push(`bad duration in "${tok}" (beats, e.g. 1, 0.5, 1/3)`);
+  }
+  if (l.bpm !== undefined && !(typeof l.bpm === 'number' && l.bpm >= 20 && l.bpm <= 300)) out.push('"bpm" must be a number between 20 and 300');
+  if (l.instrument !== undefined && !['piano', 'brass', 'strings', 'pure'].includes(l.instrument)) out.push('"instrument" must be piano, brass, strings or pure');
+  return out;
+};
 
 const dirs = readdirSync(path.join(ROOT, 'lessons')).filter((d) => /^\d{4}-/.test(d)).sort();
 const seen = new Set<number>();
@@ -87,6 +102,7 @@ for (const d of dirs) {
     for (const l of s.lines ?? []) {
       const t = lineText(l);
       if (!t) err(`scene ${s.id} has an empty line`);
+      else if (isMusic(l)) for (const p of musicProblems(l)) err(`scene ${s.id}, music line: ${p}`);
       else {
         total += words(t);
         if (LANG?.spaces !== false && words(t) > 30) warn(`scene ${s.id}: long line (${words(t)} words), captions read better under ~22`);
@@ -105,7 +121,7 @@ for (const d of dirs) {
 
   // quiz
   const norm = (t: string) => t.toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, ' ').trim();
-  const narration = norm((meta.scenes ?? []).flatMap((sc: any) => (sc.lines ?? []).map(lineText)).join(' '));
+  const narration = norm((meta.scenes ?? []).flatMap((sc: any) => (sc.lines ?? []).filter((l: any) => !isMusic(l)).map(lineText)).join(' '));
   const notesText = existsSync(path.join(dir, 'notes.md')) ? norm(readFileSync(path.join(dir, 'notes.md'), 'utf8')) : '';
   try {
     const quiz = JSON.parse(readFileSync(path.join(dir, 'quiz.json'), 'utf8'));

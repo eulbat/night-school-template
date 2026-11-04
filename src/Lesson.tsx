@@ -42,7 +42,13 @@ export type Timings = {
   subtitle: string;
   track: Track;
   objectives: string[];
-  scenes: { id: string; file: string | null; duration: number; lines: { text: string; start: number; end: number }[] }[];
+  scenes: {
+    id: string;
+    file: string | null;
+    duration: number;
+    /** `music` lines play synthesized notes (seconds from the line start) instead of speech. */
+    lines: { text: string; start: number; end: number; music?: boolean; notes?: { t: number; d: number; midi: number[] }[] }[];
+  }[];
 };
 
 export type LessonProps = { lessonId: number; timings?: Timings; captions?: boolean };
@@ -222,10 +228,16 @@ export const Lesson: React.FC<LessonProps> = ({ lessonId, timings, captions = tr
   const tr = TRACKS[timings.track];
   const total = lessonDuration(timings);
   const offsets = sceneOffsets(timings);
-  const musicVol = interpolate(frame, [0, 30, total - 60, total], [0, 0.11, 0.11, 0], {
-    extrapolateLeft: 'clamp',
-    extrapolateRight: 'clamp',
-  });
+  // The ambient bed steps aside while a music line plays, so the notes are heard clearly.
+  const musicSpans = timings.scenes.flatMap((s, i) =>
+    s.lines.filter((l) => l.music).map((l) => [offsets[i].start + LEAD + l.start * FPS, offsets[i].start + LEAD + l.end * FPS]),
+  );
+  const duck = Math.min(1, ...musicSpans.map(([a, b]) => 1 - Math.min(progress(frame, a - 15, a), 1 - progress(frame, b, b + 20))));
+  const musicVol =
+    interpolate(frame, [0, 30, total - 60, total], [0, 0.11, 0.11, 0], {
+      extrapolateLeft: 'clamp',
+      extrapolateRight: 'clamp',
+    }) * duck;
   return (
     <AbsoluteFill style={{ background: C.deep }}>
       <Backdrop glow={tr.glow} />
@@ -238,9 +250,12 @@ export const Lesson: React.FC<LessonProps> = ({ lessonId, timings, captions = tr
         const Visual = visuals[s.id];
         const beats = s.lines.map((l) => LEAD + Math.round(l.start * FPS));
         const beatEnds = s.lines.map((l) => LEAD + Math.round(l.end * FPS));
+        const notes = s.lines.map((l) =>
+          (l.notes ?? []).map((n) => ({ at: LEAD + Math.round((l.start + n.t) * FPS), frames: Math.max(1, Math.round(n.d * FPS)), midi: n.midi })),
+        );
         return (
           <Sequence key={s.id} from={o.start} durationInFrames={o.frames} name={s.id}>
-            <SceneContext.Provider value={{ beats, beatEnds, duration: o.frames }}>
+            <SceneContext.Provider value={{ beats, beatEnds, duration: o.frames, notes, musical: musicSpans.length > 0 }}>
               <SceneShell frames={o.frames}>{Visual ? <Visual /> : <Missing id={s.id} />}</SceneShell>
               {captions ? <Caption lines={s.lines} /> : null}
             </SceneContext.Provider>
