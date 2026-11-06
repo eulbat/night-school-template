@@ -138,7 +138,7 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
 .dot { width: 26px; height: 8px; border-radius: 4px; background: var(--surface-2); border: 0; padding: 0; }
 .dot.cur { background: var(--accent); }
 .dot.solid { background: var(--good); } .dot.hinted { background: var(--warn); } .dot.missed { background: var(--bad); }
-.qcard { display: grid; gap: 6px; }
+.qcard { display: grid; gap: 6px; scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 12px); }
 .qtag { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .qtext { font-weight: 800; font-size: 17px; line-height: 1.4; }
 .thread { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 14px 20px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-content: start; min-height: 120px; }
@@ -734,6 +734,14 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
     openQuestion();
   }
 
+  // On narrow screens the quiz grows with the page, so a new question can start above the fold.
+  function revealQuestion() {
+    const card = $('qcard');
+    if (card.getBoundingClientRect().top >= 0) return;
+    const smooth = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    card.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'start' });
+  }
+
   async function openQuestion({ restore = false, draft = '' } = {}) {
     const qz = state.quiz;
     const it = qz.items[qz.idx];
@@ -747,6 +755,7 @@ h1, h2, h3 { text-wrap: balance; margin: 0; }
       p.log = [];
     }
     show(['btn-start', 'btn-next', 'stuck', 'btn-bonus'], false);
+    if (!restore) revealQuestion();
     $('qtag').textContent = qz.mode === 'bonus'
       ? `Bonus · optional · from the deep dive · ${it.q.concept}`
       : `${qz.mode === 'review' ? `Review · Lesson ${it.lesson.number}: ${it.lesson.title} · ` : ''}Q${qz.idx + 1} of ${qz.items.length} · ${isBonus(it.q) ? 'from the deep dive' : 'from the video'} · ${it.q.concept}`;
